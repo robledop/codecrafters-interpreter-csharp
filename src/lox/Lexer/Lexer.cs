@@ -76,54 +76,54 @@ public class Lexer
         switch (CurrentChar)
         {
             case '(':
-                token = new Token { Type = TokenType.LEFT_PAREN, Literal = "(" };
+                token = new Token { Type = TokenType.LEFT_PAREN, Lexeme = "(" };
                 break;
             case ')':
-                token = new Token { Type = TokenType.RIGHT_PAREN, Literal = ")" };
+                token = new Token { Type = TokenType.RIGHT_PAREN, Lexeme = ")" };
                 break;
             case '{':
-                token = new Token { Type = TokenType.LEFT_BRACE, Literal = "{" };
+                token = new Token { Type = TokenType.LEFT_BRACE, Lexeme = "{" };
                 break;
             case '}':
-                token = new Token { Type = TokenType.RIGHT_BRACE, Literal = "}" };
+                token = new Token { Type = TokenType.RIGHT_BRACE, Lexeme = "}" };
                 break;
             case ',':
-                token = new Token { Type = TokenType.COMMA, Literal = "," };
+                token = new Token { Type = TokenType.COMMA, Lexeme = "," };
                 break;
             case '.':
-                token = new Token { Type = TokenType.DOT, Literal = "." };
+                token = new Token { Type = TokenType.DOT, Lexeme = "." };
                 break;
             case '-':
-                token = new Token { Type = TokenType.MINUS, Literal = "-" };
+                token = new Token { Type = TokenType.MINUS, Lexeme = "-" };
                 break;
             case '+':
-                token = new Token { Type = TokenType.PLUS, Literal = "+" };
+                token = new Token { Type = TokenType.PLUS, Lexeme = "+" };
                 break;
             case ';':
-                token = new Token { Type = TokenType.SEMICOLON, Literal = ";" };
+                token = new Token { Type = TokenType.SEMICOLON, Lexeme = ";" };
                 break;
             case '*':
-                token = new Token { Type = TokenType.STAR, Literal = "*" };
+                token = new Token { Type = TokenType.STAR, Lexeme = "*" };
                 break;
             case '!':
                 token = Match('=')
-                    ? new Token { Type = TokenType.BANG_EQUAL, Literal = "!=" }
-                    : new Token { Type = TokenType.BANG, Literal = "!" };
+                    ? new Token { Type = TokenType.BANG_EQUAL, Lexeme = "!=" }
+                    : new Token { Type = TokenType.BANG, Lexeme = "!" };
                 break;
             case '=':
                 token = Match('=')
-                    ? new Token { Type = TokenType.EQUAL_EQUAL, Literal = "==" }
-                    : new Token { Type = TokenType.EQUAL, Literal = "=" };
+                    ? new Token { Type = TokenType.EQUAL_EQUAL, Lexeme = "==" }
+                    : new Token { Type = TokenType.EQUAL, Lexeme = "=" };
                 break;
             case '<':
                 token = Match('=')
-                    ? new Token { Type = TokenType.LESS_EQUAL, Literal = "<=" }
-                    : new Token { Type = TokenType.LESS, Literal = "<" };
+                    ? new Token { Type = TokenType.LESS_EQUAL, Lexeme = "<=" }
+                    : new Token { Type = TokenType.LESS, Lexeme = "<" };
                 break;
             case '>':
                 token = Match('=')
-                    ? new Token { Type = TokenType.GREATER_EQUAL, Literal = ">=" }
-                    : new Token { Type = TokenType.GREATER, Literal = ">" };
+                    ? new Token { Type = TokenType.GREATER_EQUAL, Lexeme = ">=" }
+                    : new Token { Type = TokenType.GREATER, Lexeme = ">" };
                 break;
             case '/':
                 if (Match('/'))
@@ -133,11 +133,11 @@ public class Lexer
                         ReadChar();
                     }
 
-                    token = new Token { Type = TokenType.COMMENT, Literal = "" };
+                    token = new Token { Type = TokenType.COMMENT, Lexeme = "" };
                 }
                 else
                 {
-                    token = new Token { Type = TokenType.SLASH, Literal = "/" };
+                    token = new Token { Type = TokenType.SLASH, Lexeme = "/" };
                 }
 
                 break;
@@ -145,24 +145,54 @@ public class Lexer
             case ' ':
             case '\r':
             case '\t':
-                token = new Token { Type = TokenType.WHITESPACE, Literal = "" };
+                token = new Token { Type = TokenType.WHITESPACE, Lexeme = $"{CurrentChar}" };
                 break;
 
             case '\n':
-                token = new Token { Type = TokenType.WHITESPACE, Literal = "" };
+                token = new Token { Type = TokenType.WHITESPACE, Lexeme = $"{CurrentChar}" };
                 Line++;
                 break;
+            case '"':
+                token = ReadString();
+                break;
             case '\0':
-                return new Token { Type = TokenType.EOF, Literal = "" };
+                return new Token { Type = TokenType.EOF, Lexeme = "" };
             default:
                 Lox.Error(Line, $"Unexpected character: {CurrentChar}");
-                token = new Token { Type = TokenType.INVALID, Literal = "" };
+                token = new Token { Type = TokenType.INVALID, Lexeme = "" };
                 break;
         }
 
         ReadChar();
 
         return token;
+    }
+
+    Token ReadString()
+    {
+        var start = NextPosition;
+        while (Peek() != '"' && !IsAtEnd())
+        {
+            if (Peek() == '\n')
+            {
+                Line++;
+            }
+
+            ReadChar();
+        }
+
+        if (IsAtEnd())
+        {
+            Lox.Error(Line, "Unterminated string.");
+            return new Token { Type = TokenType.INVALID, Lexeme = "" };
+        }
+
+        // Consume the closing "
+        ReadChar();
+
+        var end = CurrentPosition;
+
+        return new Token { Type = TokenType.STRING, Lexeme = "", Literal = Source[start..end] };
     }
 
     private IEnumerable<Token> ScanTokens()

@@ -13,7 +13,6 @@ public class LexerTests
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.EOF, tokens[0].Type);
-        Assert.Equal("", tokens[0].Literal);
     }
 
     [Fact]
@@ -26,7 +25,6 @@ public class LexerTests
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.EOF, tokens[0].Type);
-        Assert.Equal("", tokens[0].Literal);
     }
 
     [Fact]
@@ -112,5 +110,20 @@ public class LexerTests
         Assert.Equal(TokenType.SLASH, tokens[pos++].Type);
         Assert.Equal(TokenType.BANG, tokens[pos++].Type);
         Assert.Equal(TokenType.EOF, tokens[pos].Type);
+    }
+
+    [Fact]
+    public void TokenizeString()
+    {
+        var input = """
+                    "Hello, World!"
+                    """;
+        var lexer = new Lexer(input);
+        var tokens = lexer.Tokens.ToList();
+
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.STRING, tokens[0].Type);
+        Assert.Equal("Hello, World!", tokens[0].Literal);
+        Assert.Equal(TokenType.EOF, tokens[1].Type);
     }
 }

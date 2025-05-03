@@ -32,7 +32,7 @@ public static class Lox
 
         foreach (var token in tokens)
         {
-            Console.WriteLine($"{token.Type} {token.Literal} null");
+            Console.WriteLine($"{token.Type} {token.Lexeme} {token.Literal ?? "null"}");
         }
     }
 

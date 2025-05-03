@@ -34,6 +34,11 @@ public class Lexer
         NextPosition++;
     }
 
+    private char Peek()
+    {
+        return NextPosition >= Source.Length ? '\0' : Source[NextPosition];
+    }
+
     private bool Match(char expected)
     {
         if (IsAtEnd())
@@ -120,6 +125,22 @@ public class Lexer
                     ? new Token { Type = TokenType.GREATER_EQUAL, Literal = ">=" }
                     : new Token { Type = TokenType.GREATER, Literal = ">" };
                 break;
+            case '/':
+                if (Match('/'))
+                {
+                    while (Peek() != '\n' && !IsAtEnd())
+                    {
+                        ReadChar();
+                    }
+
+                    token = new Token { Type = TokenType.COMMENT, Literal = "" };
+                }
+                else
+                {
+                    token = new Token { Type = TokenType.SLASH, Literal = "/" };
+                }
+
+                break;
             case '\0':
                 return new Token { Type = TokenType.EOF, Literal = "" };
             default:
@@ -144,7 +165,7 @@ public class Lexer
                 break;
             }
 
-            if (token.Type == TokenType.INVALID)
+            if (token.Type == TokenType.INVALID || token.Type == TokenType.COMMENT)
             {
                 continue;
             }

@@ -50,6 +50,7 @@ public enum TokenType
 
     EOF,
 
-    INVALID
+    INVALID,
+    COMMENT,
 }
 

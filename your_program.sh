@@ -14,11 +14,11 @@ set -e # Exit early if any commands fail
 # - Edit .codecrafters/compile.sh to change how your program compiles remotely
 (
   cd "$(dirname "$0")" # Ensure compile steps are run within the repository directory
-  dotnet build --configuration Release --output /tmp/codecrafters-build-csharp codecrafters-interpreter.csproj
+  dotnet build --configuration Release --output /tmp/codecrafters-build-csharp ./src/lox/lox.csproj
 )
 
 # Copied from .codecrafters/run.sh
 #
 # - Edit this to change how your program runs locally
 # - Edit .codecrafters/run.sh to change how your program runs remotely
-exec /tmp/codecrafters-build-csharp/codecrafters-interpreter "$@"
+exec /tmp/codecrafters-build-csharp/lox "$@"

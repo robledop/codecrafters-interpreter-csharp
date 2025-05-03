@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 25.0.1700.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codecrafters-interpreter", "codecrafters-interpreter.csproj", "{08AEDCCA-10D2-4981-A45C-00034A41A88A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tests", "tests\tests.csproj", "{86AE5CD0-73BD-4A70-9882-01F8CA9F4A85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lox", "src\lox\lox.csproj", "{112CF7A8-FA31-4DBD-B66F-64A9249250EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{08AEDCCA-10D2-4981-A45C-00034A41A88A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08AEDCCA-10D2-4981-A45C-00034A41A88A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08AEDCCA-10D2-4981-A45C-00034A41A88A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08AEDCCA-10D2-4981-A45C-00034A41A88A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86AE5CD0-73BD-4A70-9882-01F8CA9F4A85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86AE5CD0-73BD-4A70-9882-01F8CA9F4A85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86AE5CD0-73BD-4A70-9882-01F8CA9F4A85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86AE5CD0-73BD-4A70-9882-01F8CA9F4A85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{112CF7A8-FA31-4DBD-B66F-64A9249250EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{112CF7A8-FA31-4DBD-B66F-64A9249250EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{112CF7A8-FA31-4DBD-B66F-64A9249250EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{112CF7A8-FA31-4DBD-B66F-64A9249250EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

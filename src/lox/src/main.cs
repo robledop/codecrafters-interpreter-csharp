@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using codecrafters_interpreter;
+using Lox;
 
 if (args.Length < 2)
 {

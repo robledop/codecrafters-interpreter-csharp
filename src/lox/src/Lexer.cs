@@ -1,4 +1,4 @@
-namespace codecrafters_interpreter;
+namespace Lox;
 
 public class Lexer
 {
@@ -39,13 +39,13 @@ public class Lexer
         switch (CurrentChar)
         {
             case '(':
-                token = new Token { Type = nameof(Tokens.LEFT_PAREN), Literal = "(" };
+                token = new Token { Type = Tokens.LEFT_PAREN, Literal = "(" };
                 break;
             case ')':
-                token = new Token { Type = nameof(Tokens.RIGHT_PAREN), Literal = ")" };
+                token = new Token { Type = Tokens.RIGHT_PAREN, Literal = ")" };
                 break;
             case '\0':
-                token = new Token { Type = nameof(Tokens.EOF), Literal = "" };
+                token = new Token { Type = Tokens.EOF, Literal = "" };
                 break;
             default:
                 throw new Exception($"Unknown character: {CurrentChar}");

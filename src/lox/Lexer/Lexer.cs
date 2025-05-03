@@ -212,8 +212,8 @@ public class Lexer
         var lexeme = Source[start..end];
 
         return Keywords.TryGetValue(lexeme, out var type)
-            ? new Token { Type = type, Lexeme = lexeme, Literal = lexeme }
-            : new Token { Type = TokenType.IDENTIFIER, Lexeme = lexeme, Literal = lexeme };
+            ? new Token { Type = type, Lexeme = lexeme }
+            : new Token { Type = TokenType.IDENTIFIER, Lexeme = lexeme };
     }
 
     bool IsAlphanumeric(char c)

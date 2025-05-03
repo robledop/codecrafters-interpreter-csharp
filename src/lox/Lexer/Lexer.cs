@@ -70,7 +70,7 @@ public class Lexer
 
     private Token NextToken()
     {
-        SkipWhitespace();
+        // SkipWhitespace();
         Token? token;
 
         switch (CurrentChar)
@@ -141,6 +141,17 @@ public class Lexer
                 }
 
                 break;
+
+            case ' ':
+            case '\r':
+            case '\t':
+                token = new Token { Type = TokenType.WHITESPACE, Literal = "" };
+                break;
+
+            case '\n':
+                token = new Token { Type = TokenType.WHITESPACE, Literal = "" };
+                Line++;
+                break;
             case '\0':
                 return new Token { Type = TokenType.EOF, Literal = "" };
             default:
@@ -165,7 +176,7 @@ public class Lexer
                 break;
             }
 
-            if (token.Type == TokenType.INVALID || token.Type == TokenType.COMMENT)
+            if (token.Type is TokenType.INVALID or TokenType.COMMENT or TokenType.WHITESPACE)
             {
                 continue;
             }

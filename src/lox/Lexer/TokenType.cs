@@ -52,5 +52,6 @@ public enum TokenType
 
     INVALID,
     COMMENT,
+    WHITESPACE,
 }
 

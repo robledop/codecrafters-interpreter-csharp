@@ -191,8 +191,9 @@ public class Lexer
         ReadChar();
 
         var end = CurrentPosition;
+        var literal = Source[start..end];
 
-        return new Token { Type = TokenType.STRING, Lexeme = "", Literal = Source[start..end] };
+        return new Token { Type = TokenType.STRING, Lexeme = $"\"{literal}\"", Literal = literal };
     }
 
     private IEnumerable<Token> ScanTokens()

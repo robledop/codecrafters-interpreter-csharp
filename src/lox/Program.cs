@@ -38,7 +38,7 @@ async Task RunFile(string path)
 void Run(string source)
 {
     var lexer = new Lexer(source);
-    var tokens = lexer.ScanTokens();
+    var tokens = lexer.Tokens;
 
     foreach (var token in tokens)
     {

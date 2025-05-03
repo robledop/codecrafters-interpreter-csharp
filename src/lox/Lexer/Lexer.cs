@@ -2,26 +2,39 @@ namespace Lox;
 
 public class Lexer
 {
-    string Input { get; set; }
-    public int Position { get; set; }
-    int ReadPosition { get; set; }
-    char CurrentChar { get; set; }
+    public IEnumerable<Token> Tokens { get; set; }
+    public int CurrentPosition { get; set; }
+    private string Source { get; set; }
+    private int NextPosition { get; set; }
+    private char CurrentChar { get; set; }
+    private int Line { get; set; } = 1;
 
-    public Lexer(string input)
+    public Lexer(string source)
     {
-        Input = input;
+        Source = source;
+        ReadChar();
+        Tokens = ScanTokens();
+
+        Reset();
         ReadChar();
     }
 
-    void ReadChar()
+    private void Reset()
     {
-        CurrentChar = ReadPosition >= Input.Length ? '\0' : Input[ReadPosition];
-
-        Position = ReadPosition;
-        ReadPosition++;
+        CurrentPosition = 0;
+        NextPosition = 0;
+        CurrentChar = '\0';
     }
 
-    void SkipWhitespace()
+    private void ReadChar()
+    {
+        CurrentChar = NextPosition >= Source.Length ? '\0' : Source[NextPosition];
+
+        CurrentPosition = NextPosition;
+        NextPosition++;
+    }
+
+    private void SkipWhitespace()
     {
         while (char.IsWhiteSpace(CurrentChar))
         {
@@ -29,7 +42,7 @@ public class Lexer
         }
     }
 
-    Token NextToken()
+    private Token NextToken()
     {
         SkipWhitespace();
         Token? token;
@@ -42,9 +55,32 @@ public class Lexer
             case ')':
                 token = new Token { Type = TokenType.RIGHT_PAREN, Literal = ")" };
                 break;
-            case '\0':
-                token = new Token { Type = TokenType.EOF, Literal = "" };
+            case '{':
+                token = new Token { Type = TokenType.LEFT_BRACE, Literal = "{" };
                 break;
+            case '}':
+                token = new Token { Type = TokenType.RIGHT_BRACE, Literal = "}" };
+                break;
+            case ',':
+                token = new Token { Type = TokenType.COMMA, Literal = "," };
+                break;
+            case '.':
+                token = new Token { Type = TokenType.DOT, Literal = "." };
+                break;
+            case '-':
+                token = new Token { Type = TokenType.MINUS, Literal = "-" };
+                break;
+            case '+':
+                token = new Token { Type = TokenType.PLUS, Literal = "+" };
+                break;
+            case ';':
+                token = new Token { Type = TokenType.SEMICOLON, Literal = ";" };
+                break;
+            case '*':
+                token = new Token { Type = TokenType.STAR, Literal = "*" };
+                break;
+            case '\0':
+                return new Token { Type = TokenType.EOF, Literal = "" };
             default:
                 throw new Exception($"Unknown character: {CurrentChar}");
         }
@@ -54,17 +90,18 @@ public class Lexer
         return token;
     }
 
-    public IEnumerable<Token> ScanTokens()
+    private IEnumerable<Token> ScanTokens()
     {
         while (true)
         {
-            if (CurrentChar == '\0')
+            var token = NextToken();
+            if (token.Type == TokenType.EOF)
             {
-                yield return NextToken();
+                yield return token;
                 break;
             }
 
-            yield return NextToken();
+            yield return token;
         }
     }
 }

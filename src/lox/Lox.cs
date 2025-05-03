@@ -34,7 +34,7 @@ public static class Lox
         {
             if (token.Literal is double literal)
             {
-                Console.WriteLine($"{token.Type} {token.Lexeme} {literal:F}");
+                Console.WriteLine($"{token.Type} {token.Lexeme} {literal:F1}");
             }
             else
             {

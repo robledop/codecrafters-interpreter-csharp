@@ -34,9 +34,9 @@ public class Lexer
         NextPosition++;
     }
 
-    private char Peek()
+    private char Peek(int offset = 0)
     {
-        return NextPosition >= Source.Length ? '\0' : Source[NextPosition];
+        return NextPosition + offset >= Source.Length ? '\0' : Source[NextPosition + offset];
     }
 
     private bool Match(char expected)
@@ -158,6 +158,12 @@ public class Lexer
             case '\0':
                 return new Token { Type = TokenType.EOF, Lexeme = "" };
             default:
+                if (char.IsDigit(CurrentChar))
+                {
+                    token = ReadNumber();
+                    break;
+                }
+
                 Lox.Error(Line, $"Unexpected character: {CurrentChar}");
                 token = new Token { Type = TokenType.INVALID, Lexeme = "" };
                 break;
@@ -194,6 +200,35 @@ public class Lexer
         var literal = Source[start..end];
 
         return new Token { Type = TokenType.STRING, Lexeme = $"\"{literal}\"", Literal = literal };
+    }
+
+    Token ReadNumber()
+    {
+        var start = CurrentPosition;
+        while (char.IsDigit(Peek()))
+        {
+            ReadChar();
+        }
+
+        if (Peek() == '.' && char.IsDigit(Peek(1)))
+        {
+            ReadChar();
+            while (char.IsDigit(Peek()))
+            {
+                ReadChar();
+            }
+        }
+
+        var end = NextPosition;
+
+        var lexeme = Source[start..end];
+        if (double.TryParse(lexeme, out var number))
+        {
+            return new Token { Type = TokenType.NUMBER, Lexeme = lexeme, Literal = number };
+        }
+
+        Lox.Error(Line, $"Invalid number: {lexeme}");
+        return new Token { Type = TokenType.INVALID, Lexeme = lexeme };
     }
 
     private IEnumerable<Token> ScanTokens()

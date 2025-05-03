@@ -126,4 +126,21 @@ public class LexerTests
         Assert.Equal("Hello, World!", tokens[0].Literal);
         Assert.Equal(TokenType.EOF, tokens[1].Type);
     }
+
+    [Fact]
+    public void TokenizeNumber()
+    {
+        var input = """
+                    123.456
+                    123456
+                    """;
+        var lexer = new Lexer(input);
+        var tokens = lexer.Tokens.ToList();
+        Assert.Equal(3, tokens.Count);
+        Assert.Equal(TokenType.NUMBER, tokens[0].Type);
+        Assert.Equal(123.456, tokens[0].Literal);
+        Assert.Equal(TokenType.NUMBER, tokens[1].Type);
+        Assert.Equal(123456D, tokens[1].Literal);
+        Assert.Equal(TokenType.EOF, tokens[2].Type);
+    }
 }

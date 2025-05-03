@@ -1,4 +1,4 @@
-namespace Lox;
+namespace LoxInterpreter;
 
 public class Token
 {

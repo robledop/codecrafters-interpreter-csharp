@@ -1,4 +1,4 @@
-namespace Lox;
+namespace LoxInterpreter;
 
 public enum TokenType
 {
@@ -49,5 +49,7 @@ public enum TokenType
     WHILE,
 
     EOF,
+
+    INVALID
 }
 

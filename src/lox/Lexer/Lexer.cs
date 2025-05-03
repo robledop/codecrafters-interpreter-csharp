@@ -1,4 +1,4 @@
-namespace Lox;
+namespace LoxInterpreter;
 
 public class Lexer
 {
@@ -32,6 +32,27 @@ public class Lexer
 
         CurrentPosition = NextPosition;
         NextPosition++;
+    }
+
+    private bool Match(char expected)
+    {
+        if (IsAtEnd())
+        {
+            return false;
+        }
+
+        if (Source[NextPosition] == expected)
+        {
+            ReadChar();
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool IsAtEnd()
+    {
+        return CurrentChar == '\0' || CurrentPosition >= Source.Length;
     }
 
     private void SkipWhitespace()
@@ -79,10 +100,32 @@ public class Lexer
             case '*':
                 token = new Token { Type = TokenType.STAR, Literal = "*" };
                 break;
+            case '!':
+                token = Match('=')
+                    ? new Token { Type = TokenType.BANG_EQUAL, Literal = "!=" }
+                    : new Token { Type = TokenType.BANG, Literal = "!" };
+                break;
+            case '=':
+                token = Match('=')
+                    ? new Token { Type = TokenType.EQUAL_EQUAL, Literal = "==" }
+                    : new Token { Type = TokenType.EQUAL, Literal = "=" };
+                break;
+            case '<':
+                token = Match('=')
+                    ? new Token { Type = TokenType.LESS_EQUAL, Literal = "<=" }
+                    : new Token { Type = TokenType.LESS, Literal = "<" };
+                break;
+            case '>':
+                token = Match('=')
+                    ? new Token { Type = TokenType.GREATER_EQUAL, Literal = ">=" }
+                    : new Token { Type = TokenType.GREATER, Literal = ">" };
+                break;
             case '\0':
                 return new Token { Type = TokenType.EOF, Literal = "" };
             default:
-                throw new Exception($"Unknown character: {CurrentChar}");
+                Lox.Error(Line, $"Unexpected character: {CurrentChar}");
+                token = new Token { Type = TokenType.INVALID, Literal = "" };
+                break;
         }
 
         ReadChar();
@@ -99,6 +142,11 @@ public class Lexer
             {
                 yield return token;
                 break;
+            }
+
+            if (token.Type == TokenType.INVALID)
+            {
+                continue;
             }
 
             yield return token;

@@ -2,10 +2,10 @@ namespace Lox;
 
 public class Lexer
 {
-    public string Input { get; set; }
+    string Input { get; set; }
     public int Position { get; set; }
-    public int ReadPosition { get; set; }
-    public char CurrentChar { get; set; }
+    int ReadPosition { get; set; }
+    char CurrentChar { get; set; }
 
     public Lexer(string input)
     {
@@ -13,15 +13,13 @@ public class Lexer
         ReadChar();
     }
 
-
-    public void ReadChar()
+    void ReadChar()
     {
         CurrentChar = ReadPosition >= Input.Length ? '\0' : Input[ReadPosition];
 
         Position = ReadPosition;
         ReadPosition++;
     }
-
 
     void SkipWhitespace()
     {
@@ -31,7 +29,7 @@ public class Lexer
         }
     }
 
-    public Token NextToken()
+    Token NextToken()
     {
         SkipWhitespace();
         Token? token;
@@ -39,13 +37,13 @@ public class Lexer
         switch (CurrentChar)
         {
             case '(':
-                token = new Token { Type = Tokens.LEFT_PAREN, Literal = "(" };
+                token = new Token { Type = TokenType.LEFT_PAREN, Literal = "(" };
                 break;
             case ')':
-                token = new Token { Type = Tokens.RIGHT_PAREN, Literal = ")" };
+                token = new Token { Type = TokenType.RIGHT_PAREN, Literal = ")" };
                 break;
             case '\0':
-                token = new Token { Type = Tokens.EOF, Literal = "" };
+                token = new Token { Type = TokenType.EOF, Literal = "" };
                 break;
             default:
                 throw new Exception($"Unknown character: {CurrentChar}");
@@ -54,5 +52,19 @@ public class Lexer
         ReadChar();
 
         return token;
+    }
+
+    public IEnumerable<Token> ScanTokens()
+    {
+        while (true)
+        {
+            if (CurrentChar == '\0')
+            {
+                yield return NextToken();
+                break;
+            }
+
+            yield return NextToken();
+        }
     }
 }

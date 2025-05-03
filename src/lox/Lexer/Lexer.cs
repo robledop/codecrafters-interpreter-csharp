@@ -52,7 +52,7 @@ public class Lexer
 
     private bool IsAtEnd()
     {
-        return CurrentChar == '\0' || CurrentPosition >= Source.Length;
+        return CurrentChar == '\0' || NextPosition >= Source.Length;
     }
 
     private void SkipWhitespace()

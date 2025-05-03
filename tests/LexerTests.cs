@@ -21,7 +21,8 @@ public class LexerTests
     {
         const string input = "    \t\n\t\n\r  ";
         var lexer = new Lexer(input);
-        var tokens = lexer.Tokens.ToList();;
+        var tokens = lexer.Tokens.ToList();
+        ;
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.EOF, tokens[0].Type);
@@ -59,5 +60,27 @@ public class LexerTests
         Assert.Equal(TokenType.COMMA, tokens[20].Type);
         Assert.Equal(TokenType.RIGHT_PAREN, tokens[21].Type);
         Assert.Equal(TokenType.EOF, tokens[22].Type);
+    }
+
+    [Fact]
+    public void TokenizeEqual()
+    {
+        var lexer = new Lexer("=");
+        var tokens = lexer.Tokens.ToList();
+
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.EQUAL, tokens[0].Type);
+        Assert.Equal(TokenType.EOF, tokens[1].Type);
+    }
+
+    [Fact]
+    public void TokenizeEqualEqual()
+    {
+        var lexer = new Lexer("==");
+        var tokens = lexer.Tokens.ToList();
+
+        Assert.Equal(2, tokens.Count);
+        Assert.Equal(TokenType.EQUAL_EQUAL, tokens[0].Type);
+        Assert.Equal(TokenType.EOF, tokens[1].Type);
     }
 }

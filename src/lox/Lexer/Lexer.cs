@@ -9,6 +9,26 @@ public class Lexer
     private char CurrentChar { get; set; }
     private int Line { get; set; } = 1;
 
+    private static readonly Dictionary<string, TokenType> Keywords = new()
+    {
+        { "and", TokenType.AND },
+        { "class", TokenType.CLASS },
+        { "else", TokenType.ELSE },
+        { "false", TokenType.FALSE },
+        { "for", TokenType.FOR },
+        { "fun", TokenType.FUN },
+        { "if", TokenType.IF },
+        { "nil", TokenType.NIL },
+        { "or", TokenType.OR },
+        { "print", TokenType.PRINT },
+        { "return", TokenType.RETURN },
+        { "super", TokenType.SUPER },
+        { "this", TokenType.THIS },
+        { "true", TokenType.TRUE },
+        { "var", TokenType.VAR },
+        { "while", TokenType.WHILE }
+    };
+
     public Lexer(string source)
     {
         Source = source;
@@ -164,6 +184,12 @@ public class Lexer
                     break;
                 }
 
+                if (IsAlphanumeric(CurrentChar))
+                {
+                    token = ReadIdentifier();
+                    break;
+                }
+
                 Lox.Error(Line, $"Unexpected character: {CurrentChar}");
                 token = new Token { Type = TokenType.INVALID, Lexeme = "" };
                 break;
@@ -172,6 +198,27 @@ public class Lexer
         ReadChar();
 
         return token;
+    }
+
+    Token ReadIdentifier()
+    {
+        var start = CurrentPosition;
+        while (IsAlphanumeric(Peek()))
+        {
+            ReadChar();
+        }
+
+        var end = NextPosition;
+        var lexeme = Source[start..end];
+
+        return Keywords.TryGetValue(lexeme, out var type)
+            ? new Token { Type = type, Lexeme = lexeme, Literal = lexeme }
+            : new Token { Type = TokenType.IDENTIFIER, Lexeme = lexeme, Literal = lexeme };
+    }
+
+    bool IsAlphanumeric(char c)
+    {
+        return char.IsLetterOrDigit(c) || c == '_';
     }
 
     Token ReadString()

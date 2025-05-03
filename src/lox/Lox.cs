@@ -32,9 +32,9 @@ public static class Lox
 
         foreach (var token in tokens)
         {
-            if (token.Literal is double)
+            if (token.Literal is double literal)
             {
-                Console.WriteLine($"{token.Type} {token.Lexeme} {token.Literal:D}");
+                Console.WriteLine($"{token.Type} {token.Lexeme} {literal:F}");
             }
             else
             {

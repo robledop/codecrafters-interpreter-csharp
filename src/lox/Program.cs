@@ -59,7 +59,6 @@ switch (command)
         var expression = parser.Parse();
         if (expression == null)
         {
-            Console.WriteLine("Failed to parse expression.");
             Environment.Exit(65);
         }
 

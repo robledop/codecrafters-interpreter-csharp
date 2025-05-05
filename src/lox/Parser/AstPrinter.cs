@@ -4,18 +4,10 @@ namespace LoxInterpreter.Parser;
 
 public class AstPrinter : IVisitor<string>
 {
-    public string Print(IExpr expr)
-    {
-        return expr.Accept(this);
-    }
+    public string Print(IExpr expr) => expr.Accept(this);
 
     public string Visit<TExpr>(TExpr expr) where TExpr : IExpr
-    {
-        // var number = literal % 1 == 0
-        //     ? literal.ToString("F1")
-        //     : literal.ToString("G");
-
-        return expr switch
+        => expr switch
         {
             Assign { Name.Lexeme: not null } assign => Assign(assign.Name.Lexeme, assign.Value),
             Binary { Op.Lexeme: not null } binary =>
@@ -27,7 +19,6 @@ public class AstPrinter : IVisitor<string>
             Unary { Op.Lexeme: not null } unary => Parenthesize(unary.Op.Lexeme, unary.Right),
             _ => throw new NotImplementedException($"Unknown expression type: {expr.GetType()}")
         };
-    }
 
     string Assign(string name, IExpr value)
     {

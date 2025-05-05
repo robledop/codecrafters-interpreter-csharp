@@ -1,50 +1,48 @@
+using LoxInterpreter.Parser;
+
 namespace LoxInterpreter;
 
 public static class Lox
 {
-    private static bool _hadError = false;
+    public static bool HadError { get; private set; } = false;
 
     public static void Error(int line, string message)
     {
         Report(line, "", message);
     }
 
-    static void Report(int line, string where, string message)
+    public static void Report(int line, string where, string message)
     {
         Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
-        _hadError = true;
+        HadError = true;
     }
 
     public static async Task RunFile(string path)
     {
         var contents = await File.ReadAllTextAsync(path);
         Run(contents);
-        if (_hadError)
+        if (HadError)
         {
             Environment.Exit(65);
         }
     }
 
-    static void Run(string source)
+    public static IEnumerable<Token> Tokenize(string source)
     {
         var lexer = new Lexer(source);
-        var tokens = lexer.Tokens;
+        return lexer.Tokens;
+    }
 
-        foreach (var token in tokens)
-        {
-            if (token.Literal is double literal)
-            {
-                var number = literal % 1 == 0
-                    ? literal.ToString("F1")
-                    : literal.ToString("G");
+    public static IExpr? Parse(List<Token> tokens)
+    {
+        var parser = new Parser.Parser(tokens);
+        return parser.Parse();
+    }
 
-                Console.WriteLine($"{token.Type} {token.Lexeme} {number}");
-            }
-            else
-            {
-                Console.WriteLine($"{token.Type} {token.Lexeme} {token.Literal ?? "null"}");
-            }
-        }
+    static void Run(string source)
+    {
+        var tokens = Tokenize(source).ToList();
+        Parse(tokens);
     }
 
     public static void RunPrompt()
@@ -59,7 +57,7 @@ public static class Lox
             }
 
             Run(line);
-            _hadError = false;
+            HadError = false;
         }
     }
 

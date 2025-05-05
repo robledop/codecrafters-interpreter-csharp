@@ -113,6 +113,33 @@ public class LexerTests
     }
 
     [Fact]
+    public void TokenizeMultilineComment()
+    {
+        var input = """
+                    !>*()== /* comment
+                    another comment */
+                    *)(/!
+                    """;
+        var lexer = new Lexer(input);
+        var tokens = lexer.Tokens.ToList();
+        int pos = 0;
+        Assert.Equal(12, tokens.Count);
+        Assert.Equal(TokenType.BANG, tokens[pos++].Type);
+        Assert.Equal(TokenType.GREATER, tokens[pos++].Type);
+        Assert.Equal(TokenType.STAR, tokens[pos++].Type);
+        Assert.Equal(TokenType.LEFT_PAREN, tokens[pos++].Type);
+        Assert.Equal(TokenType.RIGHT_PAREN, tokens[pos++].Type);
+        Assert.Equal(TokenType.EQUAL_EQUAL, tokens[pos++].Type);
+        Assert.Equal(TokenType.STAR, tokens[pos++].Type);
+        Assert.Equal(TokenType.RIGHT_PAREN, tokens[pos++].Type);
+        Assert.Equal(TokenType.LEFT_PAREN, tokens[pos++].Type);
+        Assert.Equal(TokenType.SLASH, tokens[pos++].Type);
+        Assert.Equal(TokenType.BANG, tokens[pos++].Type);
+        Assert.Equal(TokenType.EOF, tokens[pos].Type);
+    }
+
+
+    [Fact]
     public void TokenizeString()
     {
         var input = """

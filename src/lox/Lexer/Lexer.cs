@@ -3,7 +3,7 @@ namespace LoxInterpreter;
 public class Lexer
 {
     public IEnumerable<Token> Tokens { get; set; }
-    public int CurrentPosition { get; set; }
+    private int CurrentPosition { get; set; }
     private string Source { get; set; }
     private int NextPosition { get; set; }
     private char CurrentChar { get; set; }
@@ -61,18 +61,11 @@ public class Lexer
 
     private bool Match(char expected)
     {
-        if (IsAtEnd())
-        {
-            return false;
-        }
+        if (IsAtEnd()) return false;
+        if (Source[NextPosition] != expected) return false;
 
-        if (Source[NextPosition] == expected)
-        {
-            ReadChar();
-            return true;
-        }
-
-        return false;
+        ReadChar();
+        return true;
     }
 
     private bool IsAtEnd()
@@ -80,103 +73,87 @@ public class Lexer
         return CurrentChar == '\0' || NextPosition >= Source.Length;
     }
 
-    private void SkipWhitespace()
-    {
-        while (char.IsWhiteSpace(CurrentChar))
-        {
-            ReadChar();
-        }
-    }
-
     private Token NextToken()
     {
-        // SkipWhitespace();
         Token? token;
 
         switch (CurrentChar)
         {
             case '(':
-                token = new Token { Type = TokenType.LEFT_PAREN, Lexeme = "(" };
+                token = new Token(Type: TokenType.LEFT_PAREN, Lexeme: "(", Line: Line);
                 break;
             case ')':
-                token = new Token { Type = TokenType.RIGHT_PAREN, Lexeme = ")" };
+                token = new Token(Type: TokenType.RIGHT_PAREN, Lexeme: ")", Line: Line);
                 break;
             case '{':
-                token = new Token { Type = TokenType.LEFT_BRACE, Lexeme = "{" };
+                token = new Token(Type: TokenType.LEFT_BRACE, Lexeme: "{", Line: Line);
                 break;
             case '}':
-                token = new Token { Type = TokenType.RIGHT_BRACE, Lexeme = "}" };
+                token = new Token(Type: TokenType.RIGHT_BRACE, Lexeme: "}", Line: Line);
                 break;
             case ',':
-                token = new Token { Type = TokenType.COMMA, Lexeme = "," };
+                token = new Token(Type: TokenType.COMMA, Lexeme: ",", Line: Line);
                 break;
             case '.':
-                token = new Token { Type = TokenType.DOT, Lexeme = "." };
+                token = new Token(Type: TokenType.DOT, Lexeme: ".", Line: Line);
                 break;
             case '-':
-                token = new Token { Type = TokenType.MINUS, Lexeme = "-" };
+                token = new Token(Type: TokenType.MINUS, Lexeme: "-", Line: Line);
                 break;
             case '+':
-                token = new Token { Type = TokenType.PLUS, Lexeme = "+" };
+                token = new Token(Type: TokenType.PLUS, Lexeme: "+", Line: Line);
                 break;
             case ';':
-                token = new Token { Type = TokenType.SEMICOLON, Lexeme = ";" };
+                token = new Token(Type: TokenType.SEMICOLON, Lexeme: ";", Line: Line);
                 break;
             case '*':
-                token = new Token { Type = TokenType.STAR, Lexeme = "*" };
+                token = new Token(Type: TokenType.STAR, Lexeme: "*", Line: Line);
                 break;
             case '!':
                 token = Match('=')
-                    ? new Token { Type = TokenType.BANG_EQUAL, Lexeme = "!=" }
-                    : new Token { Type = TokenType.BANG, Lexeme = "!" };
+                    ? new Token(Type: TokenType.BANG_EQUAL, Lexeme: "!=", Line: Line)
+                    : new Token(Type: TokenType.BANG, Lexeme: "!", Line: Line);
                 break;
             case '=':
                 token = Match('=')
-                    ? new Token { Type = TokenType.EQUAL_EQUAL, Lexeme = "==" }
-                    : new Token { Type = TokenType.EQUAL, Lexeme = "=" };
+                    ? new Token(Type: TokenType.EQUAL_EQUAL, Lexeme: "==", Line: Line)
+                    : new Token(Type: TokenType.EQUAL, Lexeme: "=", Line: Line);
                 break;
             case '<':
                 token = Match('=')
-                    ? new Token { Type = TokenType.LESS_EQUAL, Lexeme = "<=" }
-                    : new Token { Type = TokenType.LESS, Lexeme = "<" };
+                    ? new Token(Type: TokenType.LESS_EQUAL, Lexeme: "<=", Line: Line)
+                    : new Token(Type: TokenType.LESS, Lexeme: "<", Line: Line);
                 break;
             case '>':
                 token = Match('=')
-                    ? new Token { Type = TokenType.GREATER_EQUAL, Lexeme = ">=" }
-                    : new Token { Type = TokenType.GREATER, Lexeme = ">" };
+                    ? new Token(Type: TokenType.GREATER_EQUAL, Lexeme: ">=", Line: Line)
+                    : new Token(Type: TokenType.GREATER, Lexeme: ">", Line: Line);
                 break;
             case '/':
                 if (Match('/'))
-                {
-                    while (Peek() != '\n' && !IsAtEnd())
-                    {
-                        ReadChar();
-                    }
-
-                    token = new Token { Type = TokenType.COMMENT, Lexeme = "" };
-                }
+                    token = ReadComment();
+                else if (Match('*'))
+                    token = ReadMultilineComment();
                 else
-                {
-                    token = new Token { Type = TokenType.SLASH, Lexeme = "/" };
-                }
+                    token = new Token(Type: TokenType.SLASH, Lexeme: "/", Line: Line);
 
                 break;
 
             case ' ':
             case '\r':
             case '\t':
-                token = new Token { Type = TokenType.WHITESPACE, Lexeme = $"{CurrentChar}" };
+                token = new Token(Type: TokenType.WHITESPACE, Lexeme: $"{CurrentChar}", Line: Line);
                 break;
 
             case '\n':
-                token = new Token { Type = TokenType.WHITESPACE, Lexeme = $"{CurrentChar}" };
+                token = new Token(Type: TokenType.WHITESPACE, Lexeme: $"{CurrentChar}", Line: Line);
                 Line++;
                 break;
             case '"':
                 token = ReadString();
                 break;
             case '\0':
-                return new Token { Type = TokenType.EOF, Lexeme = "" };
+                return new Token(Type: TokenType.EOF, Line: Line);
             default:
                 if (char.IsDigit(CurrentChar))
                 {
@@ -191,7 +168,7 @@ public class Lexer
                 }
 
                 Lox.Error(Line, $"Unexpected character: {CurrentChar}");
-                token = new Token { Type = TokenType.INVALID, Lexeme = "" };
+                token = new Token(Type: TokenType.INVALID, Line: Line);
                 break;
         }
 
@@ -200,36 +177,55 @@ public class Lexer
         return token;
     }
 
+    Token ReadComment()
+    {
+        while (Peek() != '\n' && !IsAtEnd())
+            ReadChar();
+
+        return new Token(Type: TokenType.COMMENT, Line: Line);
+    }
+
+    Token ReadMultilineComment()
+    {
+        while (Peek() != '*' && Peek(1) != '/' && !IsAtEnd())
+        {
+            if (Peek() == '\n') Line++;
+
+            ReadChar();
+        }
+
+        if (IsAtEnd())
+        {
+            Lox.Error(Line, "Unterminated block comment.");
+            return new Token(Type: TokenType.INVALID, Line: Line);
+        }
+
+        ReadChar(); // Consume '*'
+        ReadChar(); // Consume '/'
+        return new Token(Type: TokenType.COMMENT, Line: Line);
+    }
+
     Token ReadIdentifier()
     {
         var start = CurrentPosition;
-        while (IsAlphanumeric(Peek()))
-        {
-            ReadChar();
-        }
+        while (IsAlphanumeric(Peek())) ReadChar();
 
         var end = NextPosition;
         var lexeme = Source[start..end];
 
         return Keywords.TryGetValue(lexeme, out var type)
-            ? new Token { Type = type, Lexeme = lexeme }
-            : new Token { Type = TokenType.IDENTIFIER, Lexeme = lexeme };
+            ? new Token(Type: type, Lexeme: lexeme)
+            : new Token(Type: TokenType.IDENTIFIER, Lexeme: lexeme, Line: Line);
     }
 
-    bool IsAlphanumeric(char c)
-    {
-        return char.IsLetterOrDigit(c) || c == '_';
-    }
+    bool IsAlphanumeric(char c) => char.IsLetterOrDigit(c) || c == '_';
 
     Token ReadString()
     {
         var start = NextPosition;
         while (Peek() != '"' && !IsAtEnd())
         {
-            if (Peek() == '\n')
-            {
-                Line++;
-            }
+            if (Peek() == '\n') Line++;
 
             ReadChar();
         }
@@ -237,7 +233,7 @@ public class Lexer
         if (IsAtEnd())
         {
             Lox.Error(Line, "Unterminated string.");
-            return new Token { Type = TokenType.INVALID, Lexeme = "" };
+            return new Token(Type: TokenType.INVALID, Line: Line);
         }
 
         // Consume the closing "
@@ -246,24 +242,19 @@ public class Lexer
         var end = CurrentPosition;
         var literal = Source[start..end];
 
-        return new Token { Type = TokenType.STRING, Lexeme = $"\"{literal}\"", Literal = literal };
+        return new Token(Type: TokenType.STRING, Lexeme: $"\"{literal}\"", Literal: literal, Line: Line);
     }
 
     Token ReadNumber()
     {
         var start = CurrentPosition;
-        while (char.IsDigit(Peek()))
-        {
-            ReadChar();
-        }
+        while (char.IsDigit(Peek())) ReadChar();
 
         if (Peek() == '.' && char.IsDigit(Peek(1)))
         {
             ReadChar();
             while (char.IsDigit(Peek()))
-            {
                 ReadChar();
-            }
         }
 
         var end = NextPosition;
@@ -271,11 +262,11 @@ public class Lexer
         var lexeme = Source[start..end];
         if (double.TryParse(lexeme, out var number))
         {
-            return new Token { Type = TokenType.NUMBER, Lexeme = lexeme, Literal = number };
+            return new Token(Type: TokenType.NUMBER, Lexeme: lexeme, Literal: number, Line: Line);
         }
 
         Lox.Error(Line, $"Invalid number: {lexeme}");
-        return new Token { Type = TokenType.INVALID, Lexeme = lexeme };
+        return new Token(Type: TokenType.INVALID, Lexeme: lexeme, Line: Line);
     }
 
     private IEnumerable<Token> ScanTokens()

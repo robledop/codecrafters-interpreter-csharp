@@ -29,6 +29,7 @@ public static class Lox
 
     public static IEnumerable<Token> Tokenize(string source)
     {
+        HadError = false;
         var lexer = new Lexer(source);
         return lexer.Tokens;
     }

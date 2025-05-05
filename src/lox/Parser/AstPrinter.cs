@@ -11,12 +11,18 @@ public class AstPrinter : IVisitor<string>
 
     public string Visit<TExpr>(TExpr expr) where TExpr : IExpr
     {
+        // var number = literal % 1 == 0
+        //     ? literal.ToString("F1")
+        //     : literal.ToString("G");
+
         return expr switch
         {
             Assign { Name.Lexeme: not null } assign => Assign(assign.Name.Lexeme, assign.Value),
             Binary { Op.Lexeme: not null } binary =>
                 Parenthesize(binary.Op.Lexeme, binary.Left, binary.Right),
             Grouping grouping => Parenthesize("group", grouping.Expr),
+            Literal { Value: double d } literal when (double)literal.Value % 1 == 0 => d.ToString("F1"),
+            Literal { Value: double d } => d.ToString("G"),
             Literal literal => literal.Value?.ToString() ?? "nil",
             Unary { Op.Lexeme: not null } unary => Parenthesize(unary.Op.Lexeme, unary.Right),
             _ => throw new NotImplementedException($"Unknown expression type: {expr.GetType()}")

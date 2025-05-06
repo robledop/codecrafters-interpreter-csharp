@@ -130,8 +130,8 @@ public class Parser(List<Token> tokens)
     // primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
     IExpr Primary()
     {
-        if (Match(FALSE)) return new Literal("false");
-        if (Match(TRUE)) return new Literal("true");
+        if (Match(FALSE)) return new Literal(false);
+        if (Match(TRUE)) return new Literal(true);
         if (Match(NIL)) return new Literal(null);
 
         if (Match(NUMBER, STRING))
@@ -174,7 +174,6 @@ public class Parser(List<Token> tokens)
             Advance();
         }
     }
-
 
     class ParseError(Token token, string message) : Exception($"{token}: {message}")
     {

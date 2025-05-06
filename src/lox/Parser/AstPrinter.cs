@@ -15,7 +15,10 @@ public class AstPrinter : IVisitor<string>
             Grouping grouping => Parenthesize("group", grouping.Expr),
             Literal { Value: double d } literal when (double)literal.Value % 1 == 0 => d.ToString("F1"),
             Literal { Value: double d } => d.ToString("G"),
-            Literal literal => literal.Value?.ToString() ?? "nil",
+            Literal { Value: true } => "true",
+            Literal { Value: false } => "false",
+            Literal { Value: null } => "nil",
+            Literal { Value: not null } literal => literal.Value.ToString()!,
             Unary { Op.Lexeme: not null } unary => Parenthesize(unary.Op.Lexeme, unary.Right),
             _ => throw new NotImplementedException($"Unknown expression type: {expr.GetType()}")
         };

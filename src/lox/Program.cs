@@ -1,4 +1,5 @@
 using LoxInterpreter;
+using LoxInterpreter.Interpreter;
 using LoxInterpreter.Parser;
 
 var command = args[0];
@@ -68,6 +69,52 @@ switch (command)
         if (Lox.HadError)
         {
             Environment.Exit(65);
+        }
+    }
+        break;
+
+    case "evaluate":
+    {
+        if (filename == null)
+        {
+            Lox.PrintUsage();
+            Environment.Exit(64);
+        }
+
+        var source = File.ReadAllText(filename);
+        var tokens = Lox.Tokenize(source).ToList();
+        var parser = new Parser(tokens);
+        var expression = parser.Parse();
+        if (expression == null)
+        {
+            Environment.Exit(65);
+        }
+
+        var interpreter = new Interpreter();
+        var result = interpreter.Evaluate(expression);
+        switch (result)
+        {
+            case double d:
+            {
+                var number = d % 1 == 0
+                    ? d.ToString("F1")
+                    : d.ToString("G");
+
+                Console.WriteLine(number);
+                break;
+            }
+            case bool b:
+                Console.WriteLine(b ? "true" : "false");
+                break;
+            case string s:
+                Console.WriteLine(s);
+                break;
+            case null:
+                Console.WriteLine("nil");
+                break;
+            default:
+                Console.WriteLine(result);
+                break;
         }
     }
         break;

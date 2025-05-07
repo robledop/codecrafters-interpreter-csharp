@@ -96,11 +96,11 @@ switch (command)
         {
             case double d:
             {
-                var number = d % 1 == 0
-                    ? d.ToString("F1")
-                    : d.ToString("G");
-
-                Console.WriteLine(number);
+                // var number = d % 1 == 0
+                //     ? d.ToString("F1")
+                //     : d.ToString("G");
+                // Console.WriteLine(number);
+                Console.WriteLine(d);
                 break;
             }
             case bool b:

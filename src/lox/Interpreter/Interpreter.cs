@@ -20,44 +20,44 @@ public class Interpreter : IVisitor<object?>
             Binary binary => VisitBinary(binary),
             _ => throw new ArgumentOutOfRangeException(nameof(expr), expr, null)
         };
+    }
 
-        object? VisitUnary(Unary unary)
+    object? VisitBinary(Binary binary)
+    {
+        var left = Evaluate(binary.Left);
+        var right = Evaluate(binary.Right);
+
+        return binary.Op.Type switch
         {
-            var right = Evaluate(unary.Right);
-
-            return unary.Op.Type switch
+            MINUS => (double)left! - (double)right!,
+            SLASH => (double)left! / (double)right!,
+            STAR => (double)left! * (double)right!,
+            PLUS => left switch
             {
-                MINUS => -(double)right!,
-                BANG => !IsTruthy(right),
+                double l when right is double r => l + r,
+                string l when right is string r => l + r,
                 _ => null
-            };
-        }
+            },
+            GREATER => (double)left! > (double)right!,
+            GREATER_EQUAL => (double)left! >= (double)right!,
+            LESS => (double)left! < (double)right!,
+            LESS_EQUAL => (double)left! <= (double)right!,
+            EQUAL_EQUAL => IsEqual(left, right),
+            BANG_EQUAL => !IsEqual(left, right),
+            _ => null
+        };
+    }
 
-        object? VisitBinary(Binary binary)
+    object? VisitUnary(Unary unary)
+    {
+        var right = Evaluate(unary.Right);
+
+        return unary.Op.Type switch
         {
-            var left = Evaluate(binary.Left);
-            var right = Evaluate(binary.Right);
-
-            return binary.Op.Type switch
-            {
-                MINUS => (double)left! - (double)right!,
-                SLASH => (double)left! / (double)right!,
-                STAR => (double)left! * (double)right!,
-                PLUS => left switch
-                {
-                    double l when right is double r => l + r,
-                    string l when right is string r => l + r,
-                    _ => null
-                },
-                GREATER => (double)left! > (double)right!,
-                GREATER_EQUAL => (double)left! >= (double)right!,
-                LESS => (double)left! < (double)right!,
-                LESS_EQUAL => (double)left! <= (double)right!,
-                EQUAL_EQUAL => IsEqual(left, right),
-                BANG_EQUAL => !IsEqual(left, right),
-                _ => null
-            };
-        }
+            MINUS => -(double)right!,
+            BANG => !IsTruthy(right),
+            _ => null
+        };
     }
 
     bool IsEqual(object? a, object? b)

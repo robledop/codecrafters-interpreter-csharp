@@ -27,37 +27,75 @@ public class Interpreter : IVisitor<object?>
         var left = Evaluate(binary.Left);
         var right = Evaluate(binary.Right);
 
-        return binary.Op.Type switch
+        switch (binary.Op.Type)
         {
-            MINUS => (double)left! - (double)right!,
-            SLASH => (double)left! / (double)right!,
-            STAR => (double)left! * (double)right!,
-            PLUS => left switch
-            {
-                double l when right is double r => l + r,
-                string l when right is string r => l + r,
-                _ => null
-            },
-            GREATER => (double)left! > (double)right!,
-            GREATER_EQUAL => (double)left! >= (double)right!,
-            LESS => (double)left! < (double)right!,
-            LESS_EQUAL => (double)left! <= (double)right!,
-            EQUAL_EQUAL => IsEqual(left, right),
-            BANG_EQUAL => !IsEqual(left, right),
-            _ => null
-        };
+            case MINUS:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! - (double)right!;
+            case SLASH:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! / (double)right!;
+            case STAR:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! * (double)right!;
+            case PLUS:
+                return left switch
+                {
+                    double l when right is double r => l + r,
+                    string l when right is string r => l + r,
+                    _ => throw new RuntimeError(binary.Op, "Operands must be two numbers or two strings.")
+                };
+            case GREATER:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! > (double)right!;
+            case GREATER_EQUAL:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! >= (double)right!;
+            case LESS:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! < (double)right!;
+            case LESS_EQUAL:
+                CheckNumberOperands(binary.Op, left, right);
+                return (double)left! <= (double)right!;
+            case EQUAL_EQUAL:
+                return IsEqual(left, right);
+            case BANG_EQUAL:
+                return !IsEqual(left, right);
+            default:
+                return null;
+        }
     }
 
     object? VisitUnary(Unary unary)
     {
         var right = Evaluate(unary.Right);
 
-        return unary.Op.Type switch
+        switch (unary.Op.Type)
         {
-            MINUS => -(double)right!,
-            BANG => !IsTruthy(right),
-            _ => null
-        };
+            case MINUS:
+                CheckNumberOperand(unary.Op, right);
+                return -(double)right!;
+            case BANG:
+                return !IsTruthy(right);
+            default:
+                return null;
+        }
+    }
+
+    void CheckNumberOperand(Token op, object? operand)
+    {
+        if (operand is not double)
+        {
+            throw new RuntimeError(op, "Operand must be a number.");
+        }
+    }
+
+    void CheckNumberOperands(Token op, object? left, object? right)
+    {
+        if (left is not double || right is not double)
+        {
+            throw new RuntimeError(op, "Operands must be numbers.");
+        }
     }
 
     bool IsEqual(object? a, object? b)

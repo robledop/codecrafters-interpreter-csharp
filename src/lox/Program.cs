@@ -91,30 +91,34 @@ switch (command)
         }
 
         var interpreter = new Interpreter();
-        var result = interpreter.Evaluate(expression);
-        switch (result)
+        try
         {
-            case double d:
+            var result = interpreter.Evaluate(expression);
+            switch (result)
             {
-                // var number = d % 1 == 0
-                //     ? d.ToString("F1")
-                //     : d.ToString("G");
-                // Console.WriteLine(number);
-                Console.WriteLine(d);
-                break;
+                case double d:
+                {
+                    Console.WriteLine(d);
+                    break;
+                }
+                case bool b:
+                    Console.WriteLine(b ? "true" : "false");
+                    break;
+                case string s:
+                    Console.WriteLine(s);
+                    break;
+                case null:
+                    Console.WriteLine("nil");
+                    break;
+                default:
+                    Console.WriteLine(result);
+                    break;
             }
-            case bool b:
-                Console.WriteLine(b ? "true" : "false");
-                break;
-            case string s:
-                Console.WriteLine(s);
-                break;
-            case null:
-                Console.WriteLine("nil");
-                break;
-            default:
-                Console.WriteLine(result);
-                break;
+        }
+        catch (RuntimeError e)
+        {
+            // Console.WriteLine(e.Message);
+            Environment.Exit(70);
         }
     }
         break;

@@ -1,3 +1,4 @@
+using System.Globalization;
 using LoxInterpreter;
 using LoxInterpreter.Interpreter;
 using LoxInterpreter.Parser;
@@ -34,10 +35,8 @@ switch (command)
             }
         }
 
-        if (Lox.HadError)
-        {
-            Environment.Exit(65);
-        }
+        if (Lox.HadError) Environment.Exit(65);
+        if (Lox.HadRuntimeError) Environment.Exit(70);
     }
 
         break;
@@ -66,10 +65,8 @@ switch (command)
         var printer = new AstPrinter();
         var result = printer.Print(expression);
         Console.WriteLine(result);
-        if (Lox.HadError)
-        {
-            Environment.Exit(65);
-        }
+        if (Lox.HadError) Environment.Exit(65);
+        if (Lox.HadRuntimeError) Environment.Exit(70);
     }
         break;
 
@@ -94,32 +91,15 @@ switch (command)
         try
         {
             var result = interpreter.Evaluate(expression);
-            switch (result)
-            {
-                case double d:
-                {
-                    Console.WriteLine(d);
-                    break;
-                }
-                case bool b:
-                    Console.WriteLine(b ? "true" : "false");
-                    break;
-                case string s:
-                    Console.WriteLine(s);
-                    break;
-                case null:
-                    Console.WriteLine("nil");
-                    break;
-                default:
-                    Console.WriteLine(result);
-                    break;
-            }
+            Console.WriteLine(Lox.Stringify(result));
         }
         catch (RuntimeError e)
         {
-            // Console.WriteLine(e.Message);
-            Environment.Exit(70);
+            Lox.RuntimeError(e);
         }
+
+        if (Lox.HadError) Environment.Exit(65);
+        if (Lox.HadRuntimeError) Environment.Exit(70);
     }
         break;
 

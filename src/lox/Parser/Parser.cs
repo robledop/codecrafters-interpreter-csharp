@@ -7,10 +7,10 @@ namespace LoxInterpreter.Parser;
 // program        : statement* EOF ;
 // declaration    : varDecl | statement ;
 // varDecl        : "var" IDENTIFIER ( "=" expression )? ";" ;
-// statement      : exprStmt | printStmt ;
+// statement      : exprStmt | printStmt | block ;
+// block          : "{" declaration* "}" ;
 // exprStmt       : expression ";" ;
 // printStmt      : "print" expression ";" ;
-//
 // expression     : assignment ;
 // assignment     : IDENTIFIER "=" assignment | equality ;
 // equality       : comparison ( ( "!=" | "==" ) comparison )* ;
@@ -104,10 +104,31 @@ public class Parser(List<Token> tokens)
         return new Var(name, initializer);
     }
 
+    // statement      : exprStmt | printStmt | block ;
     IStmt Statement()
     {
         if (Match(PRINT)) return PrintStatement();
+        if (Match(LEFT_BRACE)) return new Block(Block());
         return ExpressionStatement();
+    }
+
+    // block          : "{" declaration* "}" ;
+    List<IStmt> Block()
+    {
+        var statements = new List<IStmt>();
+
+        while (!Check(RIGHT_BRACE) && !IsAtEnd())
+        {
+            var declaration = Declaration();
+            if (declaration != null)
+            {
+                statements.Add(declaration);
+            }
+        }
+
+        Consume(RIGHT_BRACE, "Expect '}' after block.");
+
+        return statements;
     }
 
 

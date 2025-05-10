@@ -5,7 +5,7 @@ namespace LoxInterpreter.Interpreter;
 
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 {
-    Environment _environment = new();
+    LoxEnvironment _environment = new();
 
     public object? Evaluate(IExpr expr)
     {
@@ -144,7 +144,8 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitBlockStatement(Block expr)
     {
-        throw new NotImplementedException();
+        ExecuteBlock(expr.Statements, new LoxEnvironment(_environment));
+        return null;
     }
 
     public object? VisitClassStatement(Class expr)
@@ -200,6 +201,23 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
     public object? VisitWhileStatement(While expr)
     {
         throw new NotImplementedException();
+    }
+
+    void ExecuteBlock(List<IStmt> statements, LoxEnvironment environment)
+    {
+        var previous = _environment;
+        try
+        {
+            _environment = environment;
+            foreach (var statement in statements)
+            {
+                Execute(statement);
+            }
+        }
+        finally
+        {
+            _environment = previous;
+        }
     }
 
     void CheckNumberOperand(Token op, object? operand)

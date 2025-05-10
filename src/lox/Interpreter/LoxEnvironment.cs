@@ -1,8 +1,14 @@
 namespace LoxInterpreter.Interpreter;
 
-public class Environment
+public class LoxEnvironment
 {
+    readonly LoxEnvironment? _enclosing;
     readonly Dictionary<string, object?> _values = new();
+
+    public LoxEnvironment(LoxEnvironment? enclosing = null)
+    {
+        _enclosing = enclosing;
+    }
 
     public void Define(string name, object? value)
     {
@@ -21,6 +27,11 @@ public class Environment
             return value;
         }
 
+        if (_enclosing != null)
+        {
+            return _enclosing.Get(name);
+        }
+
         throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
     }
 
@@ -29,9 +40,18 @@ public class Environment
         if (name.Lexeme is null)
             throw new RuntimeError(name, "Undefined variable 'null'.");
 
-        if (!_values.ContainsKey(name.Lexeme))
-            throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
+        if (_values.ContainsKey(name.Lexeme))
+        {
+            _values[name.Lexeme] = value;
+            return;
+        }
 
-        _values[name.Lexeme] = value;
+        if (_enclosing is not null)
+        {
+            _enclosing.Assign(name, value);
+            return;
+        }
+
+        throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
     }
 }

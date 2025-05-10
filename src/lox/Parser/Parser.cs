@@ -4,6 +4,11 @@ namespace LoxInterpreter.Parser;
 
 // Grammar
 //
+// program        : statement* EOF ;
+// statement      : exprStmt | printStmt ;
+// exprStmt       : expression ";" ;
+// printStmt      : "print" expression ";" ;
+//
 // expression     : equality ;
 // equality       : comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
@@ -16,7 +21,8 @@ public class Parser(List<Token> tokens)
 {
     int _current;
 
-    public IExpr? Parse()
+    // Used in earlier versions of the code
+    public IExpr? ParseExpression()
     {
         try
         {
@@ -26,6 +32,17 @@ public class Parser(List<Token> tokens)
         {
             return null;
         }
+    }
+
+    public List<IStmt>? Parse()
+    {
+        var statements = new List<IStmt>();
+        while (!IsAtEnd())
+        {
+            statements.Add(Statement());
+        }
+
+        return statements;
     }
 
     Token Previous() => tokens[_current - 1];
@@ -50,6 +67,26 @@ public class Parser(List<Token> tokens)
     {
         if (!IsAtEnd()) _current++;
         return Previous();
+    }
+
+    IStmt Statement()
+    {
+        if (Match(PRINT)) return PrintStatement();
+        return ExpressionStatement();
+    }
+
+    IStmt PrintStatement()
+    {
+        var value = Expression();
+        Consume(SEMICOLON, "Expect ';' after value.");
+        return new Print(value);
+    }
+
+    IStmt ExpressionStatement()
+    {
+        var expr = Expression();
+        Consume(SEMICOLON, "Expect ';' after expression.");
+        return new StmtExpression(expr);
     }
 
     // expression     : equality ;
@@ -174,8 +211,8 @@ public class Parser(List<Token> tokens)
             Advance();
         }
     }
+}
 
-    class ParseError(Token token, string message) : Exception($"{token}: {message}")
-    {
-    }
+public class ParseError(Token token, string message) : Exception($"{token}: {message}")
+{
 }

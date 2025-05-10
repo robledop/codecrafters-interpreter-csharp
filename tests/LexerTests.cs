@@ -7,8 +7,8 @@ public class LexerTests
     [Fact]
     public void EmptyInput()
     {
-        const string input = "";
-        var lexer = new Lexer(input);
+        const string INPUT = "";
+        var lexer = new Lexer(INPUT);
         var tokens = lexer.Tokens.ToList();
 
         Assert.Single(tokens);
@@ -18,10 +18,9 @@ public class LexerTests
     [Fact]
     public void Whitespace()
     {
-        const string input = "    \t\n\t\n\r  ";
-        var lexer = new Lexer(input);
+        const string INPUT = "    \t\n\t\n\r  ";
+        var lexer = new Lexer(INPUT);
         var tokens = lexer.Tokens.ToList();
-        ;
 
         Assert.Single(tokens);
         Assert.Equal(TokenType.EOF, tokens[0].Type);
@@ -30,8 +29,8 @@ public class LexerTests
     [Fact]
     public void Tokenize()
     {
-        const string input = "((!)*</>-={}=={!={<=}>=;.,)/";
-        var lexer = new Lexer(input);
+        const string INPUT = "((!)*</>-={}=={!={<=}>=;.,)/";
+        var lexer = new Lexer(INPUT);
         var tokens = lexer.Tokens.ToList();
 
         int pos = 0;
@@ -174,7 +173,7 @@ public class LexerTests
     [Fact]
     public void TokenizeIdentifier()
     {
-        const string input = """
+        const string INPUT = """
                              var x = 123;
                              var y = 456;
                              if (x > y or x < y) {
@@ -196,7 +195,7 @@ public class LexerTests
                              }
                              """;
 
-        var lexer = new Lexer(input);
+        var lexer = new Lexer(INPUT);
         var tokens = lexer.Tokens.ToList();
         Assert.Equal(89, tokens.Count);
         int pos = 0;

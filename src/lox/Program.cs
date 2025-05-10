@@ -56,7 +56,7 @@ switch (command)
         var source = File.ReadAllText(filename);
         var tokens = Lox.Tokenize(source).ToList();
         var parser = new Parser(tokens);
-        var expression = parser.Parse();
+        var expression = parser.ParseExpression();
         if (expression == null)
         {
             Environment.Exit(65);
@@ -81,7 +81,7 @@ switch (command)
         var source = File.ReadAllText(filename);
         var tokens = Lox.Tokenize(source).ToList();
         var parser = new Parser(tokens);
-        var expression = parser.Parse();
+        var expression = parser.ParseExpression();
         if (expression == null)
         {
             Environment.Exit(65);
@@ -101,6 +101,43 @@ switch (command)
         if (Lox.HadError) Environment.Exit(65);
         if (Lox.HadRuntimeError) Environment.Exit(70);
     }
+        break;
+
+    case "run":
+    {
+        if (filename == null)
+        {
+            Lox.PrintUsage();
+            Environment.Exit(64);
+        }
+
+        try
+        {
+            var source = File.ReadAllText(filename);
+            var tokens = Lox.Tokenize(source).ToList();
+            var parser = new Parser(tokens);
+            var statements = parser.Parse();
+
+            if (statements == null)
+            {
+                Environment.Exit(65);
+            }
+
+            var interpreter = new Interpreter();
+            interpreter.Interpret(statements);
+        }
+        catch (RuntimeError e)
+        {
+            Lox.RuntimeError(e);
+        }
+        catch(ParseError e)
+        {
+        }
+
+        if (Lox.HadError) Environment.Exit(65);
+        if (Lox.HadRuntimeError) Environment.Exit(70);
+    }
+
         break;
 
     default:

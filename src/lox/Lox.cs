@@ -46,27 +46,33 @@ public static class Lox
         return lexer.Tokens;
     }
 
-    public static IExpr? Parse(List<Token> tokens)
+    public static IExpr? ParseExpression(List<Token> tokens)
     {
         var parser = new Parser.Parser(tokens);
-        return parser.Parse();
+        return parser.ParseExpression();
     }
 
     static void Run(string source)
     {
-        var tokens = Tokenize(source).ToList();
-        var expression = Parse(tokens);
         try
         {
-            if (expression != null)
+            var tokens = Tokenize(source).ToList();
+            var parser = new Parser.Parser(tokens);
+            var statements = parser.Parse();
+            if (statements == null)
             {
-                var result = Interpreter.Evaluate(expression);
-                Console.WriteLine(Stringify(result));
+                Environment.Exit(65);
             }
+
+            var interpreter = new Interpreter.Interpreter();
+            interpreter.Interpret(statements);
         }
         catch (RuntimeError e)
         {
-            RuntimeError(e);
+            Lox.RuntimeError(e);
+        }
+        catch (ParseError e)
+        {
         }
 
         if (HadError) Environment.Exit(65);

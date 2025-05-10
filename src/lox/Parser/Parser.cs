@@ -5,6 +5,8 @@ namespace LoxInterpreter.Parser;
 // Grammar
 //
 // program        : statement* EOF ;
+// declaration    : varDecl | statement ;
+// varDecl        : "var" IDENTIFIER ( "=" expression )? ";" ;
 // statement      : exprStmt | printStmt ;
 // exprStmt       : expression ";" ;
 // printStmt      : "print" expression ";" ;
@@ -15,7 +17,8 @@ namespace LoxInterpreter.Parser;
 // term           : factor ( ( "-" | "+" ) factor )* ;
 // factor         : unary ( ( "/" | "*" ) unary )* ;
 // unary          : ( "!" | "-" ) unary | primary ;
-// primary        : NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+// primary        : NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" |
+//                  IDENTIFIER | "this" | "super" "." IDENTIFIER ;
 
 public class Parser(List<Token> tokens)
 {
@@ -34,12 +37,12 @@ public class Parser(List<Token> tokens)
         }
     }
 
-    public List<IStmt>? Parse()
+    public List<IStmt?> Parse()
     {
-        var statements = new List<IStmt>();
+        var statements = new List<IStmt?>();
         while (!IsAtEnd())
         {
-            statements.Add(Statement());
+            statements.Add(Declaration());
         }
 
         return statements;
@@ -67,6 +70,34 @@ public class Parser(List<Token> tokens)
     {
         if (!IsAtEnd()) _current++;
         return Previous();
+    }
+
+    IStmt? Declaration()
+    {
+        try
+        {
+            if (Match(VAR)) return VarDeclaration();
+            return Statement();
+        }
+        catch (ParseError)
+        {
+            Synchronize();
+            return null;
+        }
+    }
+
+    IStmt VarDeclaration()
+    {
+        var name = Consume(IDENTIFIER, "Expect variable name.");
+
+        IExpr? initializer = null;
+        if (Match(EQUAL))
+        {
+            initializer = Expression();
+        }
+
+        Consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Var(name, initializer);
     }
 
     IStmt Statement()
@@ -176,6 +207,11 @@ public class Parser(List<Token> tokens)
             return new Literal(Previous().Literal);
         }
 
+        if (Match(IDENTIFIER))
+        {
+            return new Variable(Previous());
+        }
+
         // ReSharper disable once InvertIf
         if (Match(LEFT_PAREN))
         {
@@ -187,10 +223,10 @@ public class Parser(List<Token> tokens)
         throw Error(Peek(), "Expect expression.");
     }
 
-    void Consume(TokenType type, string message)
+    Token Consume(TokenType type, string message)
     {
-        if (Check(type)) Advance();
-        else throw Error(Peek(), message);
+        if (Check(type)) return Advance();
+        throw Error(Peek(), message);
     }
 
     static ParseError Error(Token token, string message)

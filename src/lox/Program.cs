@@ -2,6 +2,7 @@ using System.Globalization;
 using LoxInterpreter;
 using LoxInterpreter.Interpreter;
 using LoxInterpreter.Parser;
+using Environment = System.Environment;
 
 var command = args[0];
 var filename = args.Length > 1 ? args[1] : null;
@@ -118,20 +119,12 @@ switch (command)
             var parser = new Parser(tokens);
             var statements = parser.Parse();
 
-            if (statements == null)
-            {
-                Environment.Exit(65);
-            }
-
             var interpreter = new Interpreter();
             interpreter.Interpret(statements);
         }
         catch (RuntimeError e)
         {
             Lox.RuntimeError(e);
-        }
-        catch(ParseError e)
-        {
         }
 
         if (Lox.HadError) Environment.Exit(65);

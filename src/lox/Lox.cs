@@ -1,12 +1,14 @@
 using System.Globalization;
 using LoxInterpreter.Interpreter;
 using LoxInterpreter.Parser;
+using Environment = System.Environment;
 
 
 namespace LoxInterpreter;
 
 public static class Lox
 {
+    static Interpreter.Interpreter _interpreter = new();
     public static bool HadError { get; private set; }
     public static bool HadRuntimeError { get; private set; }
     static LoxInterpreter.Interpreter.Interpreter Interpreter { get; } = new();
@@ -59,20 +61,11 @@ public static class Lox
             var tokens = Tokenize(source).ToList();
             var parser = new Parser.Parser(tokens);
             var statements = parser.Parse();
-            if (statements == null)
-            {
-                Environment.Exit(65);
-            }
-
-            var interpreter = new Interpreter.Interpreter();
-            interpreter.Interpret(statements);
+            _interpreter.Interpret(statements);
         }
         catch (RuntimeError e)
         {
             Lox.RuntimeError(e);
-        }
-        catch (ParseError e)
-        {
         }
 
         if (HadError) Environment.Exit(65);

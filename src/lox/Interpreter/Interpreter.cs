@@ -5,18 +5,20 @@ namespace LoxInterpreter.Interpreter;
 
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 {
+    Environment _environment = new();
+
     public object? Evaluate(IExpr expr)
     {
         return expr.Accept(this);
     }
 
-    public void Interpret(List<IStmt> statements)
+    public void Interpret(List<IStmt?> statements)
     {
         try
         {
             foreach (var statement in statements)
             {
-                Execute(statement);
+                if (statement != null) Execute(statement);
             }
         }
         catch (RuntimeError e)
@@ -100,9 +102,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
     }
 
     public object? VisitVariableExpression(Variable expr)
-    {
-        throw new NotImplementedException();
-    }
+        => _environment.Get(expr.Name);
 
     public object? VisitLogicalExpression(Logical expr)
     {
@@ -175,7 +175,19 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitVarStatement(Var expr)
     {
-        throw new NotImplementedException();
+        object? value = null;
+        if (expr.Initializer is not null)
+        {
+            value = Evaluate(expr.Initializer);
+        }
+
+        if (expr.Name.Lexeme is null)
+        {
+            throw new RuntimeError(expr.Name, "Variable name cannot be null.");
+        }
+
+        _environment.Define(expr.Name.Lexeme, value);
+        return null;
     }
 
     public object? VisitWhileStatement(While expr)

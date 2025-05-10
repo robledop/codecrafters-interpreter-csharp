@@ -1,0 +1,80 @@
+{
+  "scopeName": "source.lox",
+  "name": "Lox",
+  "fileTypes": ["lox"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#string" },
+    { "include": "#number" },
+    { "include": "#keyword" },
+    { "include": "#operator" },
+    { "include": "#punctuation" },
+    {
+      "name": "variable.other.lox",
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.lox",
+          "begin": "//",
+          "beginCaptures": { "0": { "name": "punctuation.definition.comment.lox" } },
+          "end": "$",
+          "patterns": []
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.lox",
+          "begin": "\"",
+          "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.lox" } },
+          "end": "\"",
+          "endCaptures": { "0": { "name": "punctuation.definition.string.end.lox" } },
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.lox"
+            }
+          ]
+        }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "name": "constant.numeric.lox",
+          "match": "\\b\\d+(?:\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "name": "keyword.control.lox",
+          "match": "\\b(?:and|class|else|false|for|fun|if|null|or|print|return|super|this|true|var|while)\\b"
+        }
+      ]
+    },
+    "operator": {
+      "patterns": [
+        {
+          "name": "keyword.operator.lox",
+          "match": "!=|==|<=|>=|[-+*/=!<>]"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.lox",
+          "match": "[(){}\\\\[\\\\].,;]"
+        }
+      ]
+    }
+  }
+}
+

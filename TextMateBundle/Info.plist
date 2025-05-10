@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>Lox</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.example.lox</string>
+  <key>CFBundlePackageType</key>
+  <string>BNDL</string>
+  <key>UUID</key>
+  <string>02093447-5df2-4fe6-aed4-ac75ad922f11</string>
+</dict>
+</plist>
+

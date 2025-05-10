@@ -4,6 +4,7 @@ using static LoxInterpreter.TokenType;
 
 namespace tests;
 
+[Collection("Sequential")]
 public class InterpreterTests
 {
     [Fact]
@@ -192,5 +193,97 @@ public class InterpreterTests
 
         Assert.IsType<double>(result);
         Assert.Equal(5, (double)result);
+    }
+
+    [Fact]
+    public void Scope()
+    {
+        /* language=Java */
+        const string CODE = """
+                            var a = "global a";
+                            var b = "global b";
+                            var c = "global c";
+                            {
+                              var a = "outer a";
+                              var b = "outer b";
+                              {
+                                var a = "inner a";
+                                print a;
+                                print b;
+                                print c;
+                              }
+                              print a;
+                              print b;
+                              print c;
+                            }
+
+                            print a;
+                            print b;
+                            print c;
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       inner a
+                                       outer b
+                                       global c
+                                       outer a
+                                       outer b
+                                       global c
+                                       global a
+                                       global b
+                                       global c
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void PreventImplicitDeclarations()
+    {
+        const string CODE = "myVar = 1;";
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       Undefined variable 'myVar'.
+                                       [line 1]
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void DefaultValue()
+    {
+        const string CODE = """
+                            var a;
+                            print a;
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       nil
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
     }
 }

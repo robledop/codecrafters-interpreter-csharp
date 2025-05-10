@@ -43,7 +43,7 @@ public record Function(Token Name, List<Token> Parameters, List<IStmt> Body) : I
         => visitor.VisitFunctionStatement(this);
 }
 
-public record If(IExpr Condition, IStmt ThenBranch, IStmt ElseBranch) : IStmt
+public record If(IExpr Condition, IStmt ThenBranch, IStmt? ElseBranch) : IStmt
 {
     public TResult Accept<TResult>(IStmtVisitor<TResult> visitor)
         => visitor.VisitIfStatement(this);

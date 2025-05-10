@@ -3,13 +3,14 @@ using LoxInterpreter.Parser;
 
 namespace tests;
 
+[Collection("Sequential")]
 public class ParserTests
 {
     [Fact]
     public void OperatorPrecedenceAdditionMultiplication()
     {
-        const string source = "1 + 2 * 3";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 + 2 * 3";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
 
         Assert.NotNull(expression);
@@ -29,8 +30,8 @@ public class ParserTests
     [Fact]
     public void OperatorPrecedenceAdditionDivision()
     {
-        const string source = "1 + 2 / 3";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 + 2 / 3";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
 
         Assert.NotNull(expression);
@@ -54,8 +55,8 @@ public class ParserTests
     [Fact]
     public void OperatorPrecedenceGroupingMultiplication()
     {
-        const string source = "(1 + 2) * 3";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "(1 + 2) * 3";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -72,8 +73,8 @@ public class ParserTests
     [Fact]
     public void OperatorPrecedenceGroupingDivision()
     {
-        const string source = "(1 + 2) / 3";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "(1 + 2) / 3";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -89,8 +90,8 @@ public class ParserTests
     [Fact]
     public void True()
     {
-        const string source = "true";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "true";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
 
         Assert.NotNull(expression);
@@ -105,8 +106,8 @@ public class ParserTests
     [Fact]
     public void False()
     {
-        const string source = "false";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "false";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Literal>(expression);
@@ -119,10 +120,10 @@ public class ParserTests
     [Fact]
     public void UnterminatedString()
     {
-        const string source = """
+        const string SOURCE = """
                               "bar" "unterminated
                               """;
-        var tokens = Lox.Tokenize(source).ToList();
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
 
         Assert.NotNull(expression);
@@ -136,8 +137,8 @@ public class ParserTests
     [Fact]
     public void Number()
     {
-        const string source = "81.0";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "81.0";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
 
         Assert.NotNull(expression);
@@ -151,8 +152,8 @@ public class ParserTests
     [Fact]
     public void Nil()
     {
-        const string source = "nil";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "nil";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Literal>(expression);
@@ -164,8 +165,8 @@ public class ParserTests
     [Fact]
     public void LessThan()
     {
-        const string source = "1 < 2";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 < 2";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -183,8 +184,8 @@ public class ParserTests
     [Fact]
     public void LessThanOrEqual()
     {
-        const string source = "1 <= 2 ";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 <= 2 ";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -203,8 +204,8 @@ public class ParserTests
     [Fact]
     public void GreaterThan()
     {
-        const string source = "1 > 2 ";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 > 2 ";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -223,8 +224,8 @@ public class ParserTests
     [Fact]
     public void GreaterThanOrEqual()
     {
-        const string source = "1 >= 2 ";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 >= 2 ";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -243,8 +244,8 @@ public class ParserTests
     [Fact]
     public void String()
     {
-        const string source = "\"foo\"";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "\"foo\"";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Literal>(expression);
@@ -257,8 +258,8 @@ public class ParserTests
     [Fact]
     public void Equal()
     {
-        const string source = "1 == 2";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 == 2";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -276,8 +277,8 @@ public class ParserTests
     [Fact]
     public void NotEqual()
     {
-        const string source = "1 != 2";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "1 != 2";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Binary>(expression);
@@ -295,8 +296,8 @@ public class ParserTests
     [Fact]
     public void UnaryMinus()
     {
-        const string source = "-1";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "-1";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Unary>(expression);
@@ -312,8 +313,8 @@ public class ParserTests
     [Fact]
     public void UnaryBang()
     {
-        const string source = "!true";
-        var tokens = Lox.Tokenize(source).ToList();
+        const string SOURCE = "!true";
+        var tokens = Lox.Tokenize(SOURCE).ToList();
         var expression = Lox.ParseExpression(tokens);
         Assert.NotNull(expression);
         Assert.IsType<Unary>(expression);

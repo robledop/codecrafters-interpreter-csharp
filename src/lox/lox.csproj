@@ -9,4 +9,10 @@
     <AssemblyName>lox</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Update="test.lox">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

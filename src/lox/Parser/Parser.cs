@@ -7,7 +7,8 @@ namespace LoxInterpreter.Parser;
 // program        : statement* EOF ;
 // declaration    : varDecl | statement ;
 // varDecl        : "var" IDENTIFIER ( "=" expression )? ";" ;
-// statement      : exprStmt | printStmt | block ;
+// statement      : exprStmt | ifStmt | printStmt | block ;
+// ifStmt         : "if" "(" expression ")" statement ( "else" statement )? ;
 // block          : "{" declaration* "}" ;
 // exprStmt       : expression ";" ;
 // printStmt      : "print" expression ";" ;
@@ -107,9 +108,24 @@ public class Parser(List<Token> tokens)
     // statement      : exprStmt | printStmt | block ;
     IStmt Statement()
     {
+        if (Match(IF)) return IfStatement();
         if (Match(PRINT)) return PrintStatement();
         if (Match(LEFT_BRACE)) return new Block(Block());
         return ExpressionStatement();
+    }
+
+    // ifStmt         : "if" "(" expression ")" statement ( "else" statement )? ;
+    IStmt IfStatement()
+    {
+        Consume(LEFT_PAREN, "Expect '(' after 'if'.");
+        var condition = Expression();
+        Consume(RIGHT_PAREN, "Expect ')' after condition.");
+
+        var thenBranch = Statement();
+        IStmt? elseBranch = null;
+        if (Match(ELSE)) elseBranch = Statement();
+
+        return new If(condition, thenBranch, elseBranch);
     }
 
     // block          : "{" declaration* "}" ;

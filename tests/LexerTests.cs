@@ -2,6 +2,7 @@
 
 namespace tests;
 
+[Collection("Sequential")]
 public class LexerTests
 {
     [Fact]

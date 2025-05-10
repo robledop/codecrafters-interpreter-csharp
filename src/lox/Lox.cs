@@ -54,22 +54,50 @@ public static class Lox
         return parser.ParseExpression();
     }
 
-    static void Run(string source)
+    public static void Run(string source)
     {
         try
         {
             var tokens = Tokenize(source).ToList();
             var parser = new Parser.Parser(tokens);
             var statements = parser.Parse();
+            if (statements.Count == 1 && statements[0] is StmtExpression expressionStmt)
+            {
+                var result = Interpreter.Evaluate(expressionStmt.Expression);
+                Console.WriteLine(Stringify(result));
+            }
+
             _interpreter.Interpret(statements);
         }
         catch (RuntimeError e)
         {
-            Lox.RuntimeError(e);
+            RuntimeError(e);
         }
 
         if (HadError) Environment.Exit(65);
         if (HadRuntimeError) Environment.Exit(70);
+    }
+
+    public static void TestRun(string source)
+    {
+        try
+        {
+            var tokens = Tokenize(source).ToList();
+            var parser = new Parser.Parser(tokens);
+            var statements = parser.Parse();
+            var interpreter = new Interpreter.Interpreter();
+            if (statements is [StmtExpression expressionStmt])
+            {
+                var result = interpreter.Evaluate(expressionStmt.Expression);
+                Console.WriteLine(Stringify(result));
+            }
+
+            interpreter.Interpret(statements);
+        }
+        catch (RuntimeError e)
+        {
+            RuntimeError(e);
+        }
     }
 
     public static void RunPrompt()

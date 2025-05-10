@@ -166,7 +166,16 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitIfStatement(If expr)
     {
-        throw new NotImplementedException();
+        if (IsTruthy(Evaluate(expr.Condition)))
+        {
+            Execute(expr.ThenBranch);
+        }
+        else if (expr.ElseBranch is not null)
+        {
+            Execute(expr.ElseBranch);
+        }
+
+        return null;
     }
 
     public object? VisitPrintStatement(Print expr)

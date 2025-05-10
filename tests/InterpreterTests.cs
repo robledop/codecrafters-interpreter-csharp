@@ -248,6 +248,7 @@ public class InterpreterTests
     [Fact]
     public void PreventImplicitDeclarations()
     {
+        /* language=Java */
         const string CODE = "myVar = 1;";
         var sw = new StringWriter();
         Console.SetOut(sw);
@@ -268,6 +269,7 @@ public class InterpreterTests
     [Fact]
     public void DefaultValue()
     {
+        /* language=Java */
         const string CODE = """
                             var a;
                             print a;
@@ -281,6 +283,188 @@ public class InterpreterTests
 
         const string EXPECTED_OUTPUT = """
                                        nil
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void TestIfStatement()
+    {
+        /* language=Java */
+        const string CODE = """
+                            if (true) {
+                                print "True branch";
+                            } 
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       True branch
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void TestIfStatementWithElse()
+    {
+        /* language=Java */
+        const string CODE = """
+                            if (false) {
+                                print "True branch";
+                            } else {
+                                print "False branch";
+                            }
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       False branch
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void LogicalOr()
+    {
+        /* language=Java */
+        const string CODE = """
+                            if (true or false) {
+                                print "True branch";
+                            } else {
+                                print "False branch";
+                            }
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       True branch
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void LogicalAnd()
+    {
+        /* language=Java */
+        const string CODE = """
+                            if (true and false) {
+                                print "True branch";
+                            } else {
+                                print "False branch";
+                            }
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+
+        const string EXPECTED_OUTPUT = """
+                                       False branch
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void WhileLoop()
+    {
+        /* language=Java */
+        const string CODE = """
+                            var i = 0;
+                            while (i < 5) {
+                                print i;
+                                i = i + 1;
+                            }
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       0
+                                       1
+                                       2
+                                       3
+                                       4
+
+                                       """;
+
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void ForLoop()
+    {
+        /* language=Java */
+        const string CODE = """
+                            var a = 0;
+                            var temp;
+
+                            for (var b = 1; a < 10000; b = temp + b) {
+                              print a;
+                              temp = a;
+                              a = b;
+                            }
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       0
+                                       1
+                                       1
+                                       2
+                                       3
+                                       5
+                                       8
+                                       13
+                                       21
+                                       34
+                                       55
+                                       89
+                                       144
+                                       233
+                                       377
+                                       610
+                                       987
+                                       1597
+                                       2584
+                                       4181
+                                       6765
 
                                        """;
 

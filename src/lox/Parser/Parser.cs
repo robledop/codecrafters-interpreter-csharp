@@ -108,10 +108,60 @@ public class Parser(List<Token> tokens)
     // statement      : exprStmt | printStmt | block ;
     IStmt Statement()
     {
+        if (Match(FOR)) return ForStatement();
         if (Match(IF)) return IfStatement();
         if (Match(PRINT)) return PrintStatement();
+        if (Match(WHILE)) return WhileStatement();
         if (Match(LEFT_BRACE)) return new Block(Block());
         return ExpressionStatement();
+    }
+
+    // forStmt        : "for" "(" ( varDecl | exprStmt | ";") expression? ";" expression? ")" statement ;
+    IStmt ForStatement()
+    {
+        Consume(LEFT_PAREN, "Expect '(' after 'for'.");
+
+        IStmt? initializer;
+        if (Match(VAR)) initializer = VarDeclaration();
+        else if (Match(SEMICOLON)) initializer = null;
+        else initializer = ExpressionStatement();
+
+        IExpr? condition = null;
+        if (!Check(SEMICOLON)) condition = Expression();
+        Consume(SEMICOLON, "Expect ';' after loop condition.");
+
+        IExpr? increment = null;
+        if (!Check(RIGHT_PAREN)) increment = Expression();
+        Consume(RIGHT_PAREN, "Expect ')' after for clauses.");
+
+        var body = Statement();
+
+        if (increment != null)
+        {
+            body = new Block([body, new StmtExpression(increment)]);
+        }
+
+        condition ??= new Literal(true);
+        body = new While(condition, body);
+
+        if (initializer != null)
+        {
+            body = new Block([initializer, body]);
+        }
+
+        return body;
+    }
+
+    // whileStmt      : "while" "(" expression ")" statement ;
+    IStmt WhileStatement()
+    {
+        Consume(LEFT_PAREN, "Expect '(' after 'while'.");
+        var condition = Expression();
+        Consume(RIGHT_PAREN, "Expect ')' after condition.");
+
+        var body = Statement();
+
+        return new While(condition, body);
     }
 
     // ifStmt         : "if" "(" expression ")" statement ( "else" statement )? ;
@@ -172,7 +222,7 @@ public class Parser(List<Token> tokens)
     // assignment: IDENTIFIER "=" assignment | equality ;
     IExpr Assignment()
     {
-        var expr = Equality();
+        var expr = Or();
         if (!Match(EQUAL)) return expr;
 
         var equals = Previous();
@@ -186,6 +236,35 @@ public class Parser(List<Token> tokens)
         return new Assign(variable.Name, value);
     }
 
+    // or: and ( "or" and )* ;
+    IExpr Or()
+    {
+        var expr = And();
+
+        while (Match(OR))
+        {
+            var op = Previous();
+            var right = And();
+            expr = new Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+
+    // and: equality ( "and" equality )* ;
+    IExpr And()
+    {
+        var expr = Equality();
+
+        while (Match(AND))
+        {
+            var op = Previous();
+            var right = Equality();
+            expr = new Logical(expr, op, right);
+        }
+
+        return expr;
+    }
 
     // equality: comparison ( ( "!=" | "==" ) comparison )* ;
     IExpr Equality()

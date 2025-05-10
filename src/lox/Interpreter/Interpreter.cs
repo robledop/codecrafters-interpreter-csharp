@@ -113,7 +113,18 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitLogicalExpression(Logical expr)
     {
-        throw new NotImplementedException();
+        var left = Evaluate(expr.Left);
+
+        if (expr.Op.Type == OR)
+        {
+            if (IsTruthy(left)) return left;
+        }
+        else
+        {
+            if (!IsTruthy(left)) return left;
+        }
+
+        return Evaluate(expr.Right);
     }
 
     public object? VisitCallExpression(Call expr)
@@ -209,7 +220,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitWhileStatement(While expr)
     {
-        throw new NotImplementedException();
+        while (IsTruthy(Evaluate(expr.Condition)))
+        {
+            Execute(expr.Body);
+        }
+
+        return null;
     }
 
     void ExecuteBlock(List<IStmt> statements, LoxEnvironment environment)

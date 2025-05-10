@@ -34,7 +34,14 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitAssignExpression(Assign expr)
     {
-        throw new NotImplementedException();
+        var value = Evaluate(expr.Value);
+        if (expr.Name.Lexeme is null)
+        {
+            throw new RuntimeError(expr.Name, "Variable name cannot be null.");
+        }
+
+        _environment.Assign(expr.Name, value);
+        return value;
     }
 
     public object? VisitBinaryExpression(Binary expr)

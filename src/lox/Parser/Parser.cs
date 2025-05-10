@@ -11,7 +11,8 @@ namespace LoxInterpreter.Parser;
 // exprStmt       : expression ";" ;
 // printStmt      : "print" expression ";" ;
 //
-// expression     : equality ;
+// expression     : assignment ;
+// assignment     : IDENTIFIER "=" assignment | equality ;
 // equality       : comparison ( ( "!=" | "==" ) comparison )* ;
 // comparison     : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
 // term           : factor ( ( "-" | "+" ) factor )* ;
@@ -72,6 +73,8 @@ public class Parser(List<Token> tokens)
         return Previous();
     }
 
+
+    // declaration    : varDecl | statement ;
     IStmt? Declaration()
     {
         try
@@ -86,6 +89,7 @@ public class Parser(List<Token> tokens)
         }
     }
 
+    // varDecl        : "var" IDENTIFIER ( "=" expression )? ";" ;
     IStmt VarDeclaration()
     {
         var name = Consume(IDENTIFIER, "Expect variable name.");
@@ -106,6 +110,8 @@ public class Parser(List<Token> tokens)
         return ExpressionStatement();
     }
 
+
+    // printStmt      : "print" expression ";" ;
     IStmt PrintStatement()
     {
         var value = Expression();
@@ -113,6 +119,8 @@ public class Parser(List<Token> tokens)
         return new Print(value);
     }
 
+
+    // exprStmt       : expression ";" ;
     IStmt ExpressionStatement()
     {
         var expr = Expression();
@@ -120,8 +128,27 @@ public class Parser(List<Token> tokens)
         return new StmtExpression(expr);
     }
 
-    // expression     : equality ;
-    IExpr Expression() => Equality();
+    // expression     : assignment ;
+    IExpr Expression() => Assignment();
+
+
+    // assignment: IDENTIFIER "=" assignment | equality ;
+    IExpr Assignment()
+    {
+        var expr = Equality();
+        if (!Match(EQUAL)) return expr;
+
+        var equals = Previous();
+        var value = Assignment();
+
+        if (expr is not Variable variable)
+        {
+            throw Error(equals, "Invalid assignment target.");
+        }
+
+        return new Assign(variable.Name, value);
+    }
+
 
     // equality: comparison ( ( "!=" | "==" ) comparison )* ;
     IExpr Equality()
@@ -195,7 +222,8 @@ public class Parser(List<Token> tokens)
         return new Unary(op, right);
     }
 
-    // primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+    // primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" |
+    //                  IDENTIFIER | "this" | "super" "." IDENTIFIER ;
     IExpr Primary()
     {
         if (Match(FALSE)) return new Literal(false);

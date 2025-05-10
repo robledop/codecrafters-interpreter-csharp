@@ -23,4 +23,15 @@ public class Environment
 
         throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
     }
+
+    public void Assign(Token name, object? value)
+    {
+        if (name.Lexeme is null)
+            throw new RuntimeError(name, "Undefined variable 'null'.");
+
+        if (!_values.ContainsKey(name.Lexeme))
+            throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
+
+        _values[name.Lexeme] = value;
+    }
 }

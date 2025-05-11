@@ -589,7 +589,7 @@ public class InterpreterTests(ITestOutputHelper testOutput)
         var output = sw.ToString();
 
         testOutput.WriteLine(output);
-        Assert.Matches(@"^\d+$", output.Trim());
+        Assert.Matches(@"^\d+\.\d+$", output.Trim());
     }
 
     [Fact]
@@ -607,7 +607,7 @@ public class InterpreterTests(ITestOutputHelper testOutput)
         var output = sw.ToString();
 
         testOutput.WriteLine(output);
-        Assert.Matches(@"^\d+$", output.Trim());
+        Assert.Matches(@"^\d+\.\d+$", output.Trim());
     }
 
     [Fact]

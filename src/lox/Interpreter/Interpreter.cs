@@ -5,7 +5,14 @@ namespace LoxInterpreter.Interpreter;
 
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 {
-    LoxEnvironment _environment = new();
+    public LoxEnvironment Globals { get; init; } = new();
+    LoxEnvironment Environment { get; set; }
+
+    public Interpreter()
+    {
+        Globals.Define("clock", new Clock());
+        Environment = Globals;
+    }
 
     public object? Evaluate(IExpr expr)
     {
@@ -40,7 +47,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
             throw new RuntimeError(expr.Name, "Variable name cannot be null.");
         }
 
-        _environment.Assign(expr.Name, value);
+        Environment.Assign(expr.Name, value);
         return value;
     }
 
@@ -109,7 +116,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
     }
 
     public object? VisitVariableExpression(Variable expr)
-        => _environment.Get(expr.Name);
+        => Environment.Get(expr.Name);
 
     public object? VisitLogicalExpression(Logical expr)
     {
@@ -129,7 +136,25 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitCallExpression(Call expr)
     {
-        throw new NotImplementedException();
+        var callee = Evaluate(expr.Callee);
+        if (callee is not ICallable function)
+        {
+            throw new RuntimeError(expr.Paren, "Can only call functions and classes.");
+        }
+
+        var arguments = expr
+            .Arguments
+            .Select(Evaluate)
+            .OfType<object>()
+            .ToList();
+
+        if (arguments.Count != function.Arity())
+        {
+            throw new RuntimeError(expr.Paren,
+                $"Expected {function.Arity()} arguments but got {arguments.Count}.");
+        }
+
+        return function.Call(this, arguments);
     }
 
     public object? VisitGetExpression(Get expr)
@@ -155,7 +180,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitBlockStatement(Block expr)
     {
-        ExecuteBlock(expr.Statements, new LoxEnvironment(_environment));
+        ExecuteBlock(expr.Statements, new LoxEnvironment(Environment));
         return null;
     }
 
@@ -172,7 +197,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitFunctionStatement(Function expr)
     {
-        throw new NotImplementedException();
+        ArgumentException.ThrowIfNullOrEmpty(expr.Name.Lexeme);
+
+        var function = new LoxFunction(expr, Environment);
+
+        Environment.Define(expr.Name.Lexeme, function);
+        return null;
     }
 
     public object? VisitIfStatement(If expr)
@@ -196,9 +226,15 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         return null;
     }
 
-    public object? VisitReturnStatement(Return expr)
+    public object? VisitReturnStatement(ReturnStmt expr)
     {
-        throw new NotImplementedException();
+        object? value = null;
+        if (expr.Value is not null)
+        {
+            value = Evaluate(expr.Value);
+        }
+
+        throw new Return(value);
     }
 
     public object? VisitVarStatement(Var expr)
@@ -214,7 +250,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
             throw new RuntimeError(expr.Name, "Variable name cannot be null.");
         }
 
-        _environment.Define(expr.Name.Lexeme, value);
+        Environment.Define(expr.Name.Lexeme, value);
         return null;
     }
 
@@ -228,12 +264,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         return null;
     }
 
-    void ExecuteBlock(List<IStmt> statements, LoxEnvironment environment)
+    public void ExecuteBlock(List<IStmt> statements, LoxEnvironment environment)
     {
-        var previous = _environment;
+        var previous = Environment;
         try
         {
-            _environment = environment;
+            Environment = environment;
             foreach (var statement in statements)
             {
                 Execute(statement);
@@ -241,7 +277,7 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         }
         finally
         {
-            _environment = previous;
+            Environment = previous;
         }
     }
 

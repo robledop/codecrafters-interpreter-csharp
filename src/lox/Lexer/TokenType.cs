@@ -53,5 +53,8 @@ public enum TokenType
     INVALID,
     COMMENT,
     WHITESPACE,
+
+    // Native functions
+    CLOCK,
 }
 

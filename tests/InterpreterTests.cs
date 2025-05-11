@@ -1,11 +1,12 @@
 using LoxInterpreter;
 using LoxInterpreter.Parser;
+using Xunit.Abstractions;
 using static LoxInterpreter.TokenType;
 
 namespace tests;
 
 [Collection("Sequential")]
-public class InterpreterTests
+public class InterpreterTests(ITestOutputHelper testOutput)
 {
     [Fact]
     public void TestBinaryExpressionAddition()
@@ -242,6 +243,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -263,6 +265,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -286,6 +289,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -310,6 +314,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -336,6 +341,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -362,6 +368,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -389,6 +396,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -419,6 +427,7 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 
@@ -468,6 +477,155 @@ public class InterpreterTests
 
                                        """;
 
+        testOutput.WriteLine(output);
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void FunctionDeclaration()
+    {
+        /* language=Java */
+        const string CODE = """
+                            fun add(a, b) {
+                            }
+
+                            print add;
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       <fn add>
+
+                                       """;
+
+        testOutput.WriteLine(output);
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void FunctionCall()
+    {
+        /* language=Java */
+        const string CODE = """
+                            fun sayHi(first, last) {
+                              print "Hi, " + first + " " + last + "!";
+                            }
+
+                            sayHi("Dear", "Reader");
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       Hi, Dear Reader!
+
+                                       """;
+
+        testOutput.WriteLine(output);
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void FunctionCallWithReturnAndRecursion()
+    {
+        /* language=Java */
+        const string CODE = """
+                            fun fib(n) {
+                              if (n <= 1) return n;
+                              return fib(n - 2) + fib(n - 1);
+                            }
+
+                            for (var i = 0; i < 10; i = i + 1) {
+                              print fib(i);
+                            }
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       0
+                                       1
+                                       1
+                                       2
+                                       3
+                                       5
+                                       8
+                                       13
+                                       21
+                                       34
+
+                                       """;
+
+        testOutput.WriteLine(output);
+        Assert.Equal(EXPECTED_OUTPUT, output);
+    }
+
+    [Fact]
+    public void ClockFunction()
+    {
+        /* language=Java */
+        const string CODE = """
+                            var time = clock();
+                            print time;
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        testOutput.WriteLine(output);
+        Assert.Matches(@"^\d+$", output.Trim());
+    }
+
+    [Fact]
+    public void FunctionWithClosure()
+    {
+        /* language=Java */
+        const string CODE = """
+                            fun makeCounter() {
+                              var count = 0;
+                              fun countUp() {
+                                count = count + 1;
+                                return count;
+                              }
+                              return countUp;
+                            }
+
+                            var counter = makeCounter();
+                            print counter();
+                            print counter();
+                            print counter();
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        const string EXPECTED_OUTPUT = """
+                                       1
+                                       2
+                                       3
+
+                                       """;
+
+        testOutput.WriteLine(output);
         Assert.Equal(EXPECTED_OUTPUT, output);
     }
 }

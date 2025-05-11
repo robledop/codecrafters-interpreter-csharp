@@ -2,26 +2,6 @@ using static LoxInterpreter.TokenType;
 
 namespace LoxInterpreter.Parser;
 
-// Grammar
-//
-// program        : statement* EOF ;
-// declaration    : varDecl | statement ;
-// varDecl        : "var" IDENTIFIER ( "=" expression )? ";" ;
-// statement      : exprStmt | ifStmt | printStmt | block ;
-// ifStmt         : "if" "(" expression ")" statement ( "else" statement )? ;
-// block          : "{" declaration* "}" ;
-// exprStmt       : expression ";" ;
-// printStmt      : "print" expression ";" ;
-// expression     : assignment ;
-// assignment     : IDENTIFIER "=" assignment | equality ;
-// equality       : comparison ( ( "!=" | "==" ) comparison )* ;
-// comparison     : term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-// term           : factor ( ( "-" | "+" ) factor )* ;
-// factor         : unary ( ( "/" | "*" ) unary )* ;
-// unary          : ( "!" | "-" ) unary | primary ;
-// primary        : NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" |
-//                  IDENTIFIER | "this" | "super" "." IDENTIFIER ;
-
 public class Parser(List<Token> tokens)
 {
     int _current;
@@ -80,6 +60,7 @@ public class Parser(List<Token> tokens)
     {
         try
         {
+            if (Match(FUN)) return Function("function");
             if (Match(VAR)) return VarDeclaration();
             return Statement();
         }
@@ -88,6 +69,33 @@ public class Parser(List<Token> tokens)
             Synchronize();
             return null;
         }
+    }
+
+    // function       : "fun" IDENTIFIER "(" parameters? ")" block ;
+    IStmt Function(string kind)
+    {
+        var name = Consume(IDENTIFIER, $"Expect {kind} name.");
+
+        Consume(LEFT_PAREN, $"Expect '(' after {kind} name.");
+        var parameters = new List<Token>();
+        if (!Check(RIGHT_PAREN))
+        {
+            do
+            {
+                if (parameters.Count >= 255)
+                {
+                    Error(Peek(), "Can't have more than 255 parameters.");
+                }
+
+                parameters.Add(Consume(IDENTIFIER, "Expect parameter name."));
+            } while (Match(COMMA));
+        }
+
+        Consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        Consume(LEFT_BRACE, $"Expect '{{' before {kind} body.");
+
+        var body = Block();
+        return new Function(name, parameters, body);
     }
 
     // varDecl        : "var" IDENTIFIER ( "=" expression )? ";" ;
@@ -111,9 +119,21 @@ public class Parser(List<Token> tokens)
         if (Match(FOR)) return ForStatement();
         if (Match(IF)) return IfStatement();
         if (Match(PRINT)) return PrintStatement();
+        if (Match(RETURN)) return ReturnStatement();
         if (Match(WHILE)) return WhileStatement();
         if (Match(LEFT_BRACE)) return new Block(Block());
         return ExpressionStatement();
+    }
+
+    // returnStmt     : "return" expression? ";" ;
+    IStmt ReturnStatement()
+    {
+        var keyword = Previous();
+        IExpr? value = null;
+        if (!Check(SEMICOLON)) value = Expression();
+
+        Consume(SEMICOLON, "Expect ';' after return value.");
+        return new ReturnStmt(keyword, value);
     }
 
     // forStmt        : "for" "(" ( varDecl | exprStmt | ";") expression? ";" expression? ")" statement ;
@@ -331,11 +351,52 @@ public class Parser(List<Token> tokens)
     // unary: ( "!" | "-" ) unary | primary ;
     IExpr Unary()
     {
-        if (!Match(BANG, MINUS)) return Primary();
+        if (!Match(BANG, MINUS)) return Call();
 
         var op = Previous();
         var right = Unary();
         return new Unary(op, right);
+    }
+
+    // call: primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+    IExpr Call()
+    {
+        var expr = Primary();
+
+        while (true)
+        {
+            if (Match(LEFT_PAREN))
+            {
+                expr = FinishCall(expr);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return expr;
+    }
+
+    IExpr FinishCall(IExpr callee)
+    {
+        var arguments = new List<IExpr>();
+
+        if (!Check(RIGHT_PAREN))
+        {
+            do
+            {
+                if (arguments.Count >= 255)
+                {
+                    Error(Peek(), "Can't have more than 255 arguments.");
+                }
+
+                arguments.Add(Expression());
+            } while (Match(COMMA));
+        }
+
+        var paren = Consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        return new Call(callee, paren, arguments);
     }
 
     // primary: NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" |

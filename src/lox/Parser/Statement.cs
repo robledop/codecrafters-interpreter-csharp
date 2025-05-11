@@ -8,7 +8,7 @@ public interface IStmtVisitor<out TResult>
     TResult VisitFunctionStatement(Function expr);
     TResult VisitIfStatement(If expr);
     TResult VisitPrintStatement(Print expr);
-    TResult VisitReturnStatement(Return expr);
+    TResult VisitReturnStatement(ReturnStmt expr);
     TResult VisitVarStatement(Var expr);
     TResult VisitWhileStatement(While expr);
 }
@@ -55,7 +55,7 @@ public record Print(IExpr Expression) : IStmt
         => visitor.VisitPrintStatement(this);
 }
 
-public record Return(Token Keyword, IExpr? Value) : IStmt
+public record ReturnStmt(Token Keyword, IExpr? Value) : IStmt
 {
     public TResult Accept<TResult>(IStmtVisitor<TResult> visitor)
         => visitor.VisitReturnStatement(this);

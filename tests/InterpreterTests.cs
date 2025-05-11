@@ -593,6 +593,24 @@ public class InterpreterTests(ITestOutputHelper testOutput)
     }
 
     [Fact]
+    public void ClockFunction2()
+    {
+        /* language=Java */
+        const string CODE = """
+                            print clock() + 80;
+                            """;
+        var sw = new StringWriter();
+        Console.SetOut(sw);
+        Console.SetError(sw);
+
+        Lox.TestRun(CODE);
+        var output = sw.ToString();
+
+        testOutput.WriteLine(output);
+        Assert.Matches(@"^\d+$", output.Trim());
+    }
+
+    [Fact]
     public void FunctionWithClosure()
     {
         /* language=Java */

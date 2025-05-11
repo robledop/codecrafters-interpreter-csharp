@@ -71,6 +71,9 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
                 return left switch
                 {
                     double l when right is double r => l + r,
+                    long l when right is long r => l + r,
+                    double l when right is long r => l + r,
+                    long l when right is double r => l + r,
                     string l when right is string r => l + r,
                     _ => throw new RuntimeError(expr.Op, "Operands must be two numbers or two strings.")
                 };

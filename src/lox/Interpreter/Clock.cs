@@ -9,7 +9,7 @@ public class Clock : ICallable
             throw new RuntimeError(new Token(TokenType.CLOCK, "clock"), "clock() takes no arguments.");
         }
 
-        return (double)DateTimeOffset.Now.ToUnixTimeMilliseconds() / 1000.0;
+        return (double)DateTimeOffset.Now.ToUnixTimeSeconds();
     }
 
     public int Arity()

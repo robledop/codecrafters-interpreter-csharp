@@ -67,6 +67,9 @@ public static class Lox
             var tokens = Tokenize(source).ToList();
             var parser = new Parser.Parser(tokens);
             var statements = parser.Parse().ToList();
+
+            if (HadError) Environment.Exit(65);
+            if (HadRuntimeError) Environment.Exit(70);
             var interpreter = new Interpreter.Interpreter();
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);

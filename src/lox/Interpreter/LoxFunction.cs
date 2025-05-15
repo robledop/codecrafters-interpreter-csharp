@@ -10,17 +10,16 @@ public class LoxFunction(Function declaration, LoxEnvironment closure) : ICallab
         for (var i = 0; i < declaration.Parameters.Count; i++)
         {
             var lexeme = declaration.Parameters[i].Lexeme;
-            if (lexeme != null)
-                environment.Define(lexeme, arguments[i]);
+            environment.Define(lexeme!, arguments[i]);
         }
 
         try
         {
             interpreter.ExecuteBlock(declaration.Body, environment);
         }
-        catch (Return returnValue)
+        catch (ReturnException ret)
         {
-            return returnValue.Value;
+            return ret.Value;
         }
 
         return null;

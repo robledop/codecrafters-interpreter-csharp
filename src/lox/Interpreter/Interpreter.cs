@@ -5,27 +5,23 @@ namespace LoxInterpreter.Interpreter;
 
 public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 {
-    public LoxEnvironment Globals { get; init; } = new();
-    LoxEnvironment Environment { get; set; }
+    readonly LoxEnvironment _globals = new();
+    readonly Dictionary<IExpr, int> _locals = new();
+    LoxEnvironment _environment;
 
     public Interpreter()
     {
-        Globals.Define("clock", new Clock());
-        Environment = Globals;
+        _environment = _globals;
+        _globals.Define("clock", new Clock());
     }
 
-    public object? Evaluate(IExpr expr)
-    {
-        return expr.Accept(this);
-    }
-
-    public void Interpret(List<IStmt?> statements)
+    public void Interpret(List<IStmt> statements)
     {
         try
         {
             foreach (var statement in statements)
             {
-                if (statement != null) Execute(statement);
+                Execute(statement);
             }
         }
         catch (RuntimeError e)
@@ -34,20 +30,39 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         }
     }
 
-    void Execute(IStmt stmt)
+    public object? Evaluate(IExpr expr) => expr.Accept(this);
+
+    void Execute(IStmt stmt) => stmt.Accept(this);
+
+    public void ExecuteBlock(List<IStmt> statements, LoxEnvironment scopedEnvironment)
     {
-        stmt.Accept(this);
+        var previous = _environment;
+        try
+        {
+            _environment = scopedEnvironment;
+            foreach (var statement in statements)
+                Execute(statement);
+        }
+        finally
+        {
+            _environment = previous;
+        }
     }
+
+    public void Resolve(IExpr expr, int depth) => _locals[expr] = depth;
 
     public object? VisitAssignExpression(Assign expr)
     {
         var value = Evaluate(expr.Value);
-        if (expr.Name.Lexeme is null)
+        if (_locals.TryGetValue(expr, out int distance))
         {
-            throw new RuntimeError(expr.Name, "Variable name cannot be null.");
+            _environment.AssignAt(distance, expr.Name, value);
+        }
+        else
+        {
+            _globals.Assign(expr.Name, value);
         }
 
-        Environment.Assign(expr.Name, value);
         return value;
     }
 
@@ -63,6 +78,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
                 return (double)left! - (double)right!;
             case SLASH:
                 CheckNumberOperands(expr.Op, left, right);
+                if (right is 0)
+                {
+                    throw new RuntimeError(expr.Op, "Division by zero.");
+                }
+
                 return (double)left! / (double)right!;
             case STAR:
                 CheckNumberOperands(expr.Op, left, right);
@@ -71,9 +91,6 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
                 return left switch
                 {
                     double l when right is double r => l + r,
-                    long l when right is long r => l + r,
-                    double l when right is long r => l + r,
-                    long l when right is double r => l + r,
                     string l when right is string r => l + r,
                     _ => throw new RuntimeError(expr.Op, "Operands must be two numbers or two strings.")
                 };
@@ -94,11 +111,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
             case BANG_EQUAL:
                 return !IsEqual(left, right);
             default:
-                return null;
+                throw new RuntimeError(expr.Op, "Unexpected binary operator.");
         }
     }
 
-    public object? VisitGroupingExpression(Grouping expr) => Evaluate(expr.Expr);
+    public object? VisitGroupingExpression(Grouping expr) => Evaluate(expr.Expression);
 
     public object? VisitLiteralExpression(Literal expr) => expr.Value;
 
@@ -114,12 +131,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
             case BANG:
                 return !IsTruthy(right);
             default:
-                return null;
+                throw new RuntimeError(expr.Op, "Unexpected unary operator.");
         }
     }
 
-    public object? VisitVariableExpression(Variable expr)
-        => Environment.Get(expr.Name);
+    public object? VisitVariableExpression(Variable expr) => LookUpVariable(expr.Name, expr);
 
     public object? VisitLogicalExpression(Logical expr)
     {
@@ -180,10 +196,9 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         throw new NotImplementedException();
     }
 
-
     public object? VisitBlockStatement(Block expr)
     {
-        ExecuteBlock(expr.Statements, new LoxEnvironment(Environment));
+        ExecuteBlock(expr.Statements, new LoxEnvironment(_environment));
         return null;
     }
 
@@ -198,13 +213,11 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         return null;
     }
 
-    public object? VisitFunctionStatement(Function expr)
+    public object? VisitFunctionStatement(Function stmt)
     {
-        ArgumentException.ThrowIfNullOrEmpty(expr.Name.Lexeme);
+        var function = new LoxFunction(stmt, _environment);
 
-        var function = new LoxFunction(expr, Environment);
-
-        Environment.Define(expr.Name.Lexeme, function);
+        _environment.Define(stmt.Name.Lexeme!, function);
         return null;
     }
 
@@ -229,60 +242,64 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         return null;
     }
 
-    public object? VisitReturnStatement(ReturnStmt expr)
+    public object? VisitReturnStatement(ReturnStmt stmt)
     {
         object? value = null;
-        if (expr.Value is not null)
+        if (stmt.Value is not null)
         {
-            value = Evaluate(expr.Value);
+            value = Evaluate(stmt.Value);
         }
 
-        throw new Return(value);
+        throw new ReturnException(value);
     }
 
-    public object? VisitVarStatement(Var expr)
+    public object? VisitVarStatement(Var stmt)
     {
         object? value = null;
-        if (expr.Initializer is not null)
+        if (stmt.Initializer is not null)
         {
-            value = Evaluate(expr.Initializer);
+            value = Evaluate(stmt.Initializer);
         }
 
-        if (expr.Name.Lexeme is null)
-        {
-            throw new RuntimeError(expr.Name, "Variable name cannot be null.");
-        }
-
-        Environment.Define(expr.Name.Lexeme, value);
+        _environment.Define(stmt.Name.Lexeme!, value);
         return null;
     }
 
-    public object? VisitWhileStatement(While expr)
+    public object? VisitWhileStatement(While stmt)
     {
-        while (IsTruthy(Evaluate(expr.Condition)))
+        while (IsTruthy(Evaluate(stmt.Condition)))
         {
-            Execute(expr.Body);
-        }
-
-        return null;
-    }
-
-    public void ExecuteBlock(List<IStmt> statements, LoxEnvironment environment)
-    {
-        var previous = Environment;
-        try
-        {
-            Environment = environment;
-            foreach (var statement in statements)
+            try
             {
-                Execute(statement);
+                Execute(stmt.Body);
+            }
+            catch (BreakException)
+            {
+                break;
+            }
+            catch (ContinueException)
+            {
+                // Continue to the next iteration of the loop.
             }
         }
-        finally
-        {
-            Environment = previous;
-        }
+
+        return null;
     }
+
+    public object? VisitBreakStatement(Break stmt) =>
+        throw new BreakException();
+
+    public object? VisitContinueStatement(Continue stmt) =>
+        throw new ContinueException();
+
+    object? LookUpVariable(Token name, IExpr expr)
+    {
+        if (_locals.TryGetValue(expr, out var distance))
+            return _environment.GetAt(distance, name);
+
+        return _globals.Get(name);
+    }
+
 
     void CheckNumberOperand(Token op, object? operand)
     {
@@ -302,11 +319,12 @@ public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     bool IsEqual(object? a, object? b)
     {
-        if (a == null && b == null) return true;
-        if (a == null) return false;
-        // if (b == null) return false;
-
-        return a.Equals(b);
+        return a switch
+        {
+            null when b == null => true,
+            null => false,
+            _ => a.Equals(b)
+        };
     }
 
     bool IsTruthy(object? value)

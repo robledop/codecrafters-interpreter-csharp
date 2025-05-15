@@ -60,7 +60,7 @@ public class AstPrinter : IExprVisitor<string>
 
     public string VisitGroupingExpression(Grouping expr)
     {
-        return Parenthesize("group", expr.Expr);
+        return Parenthesize("group", expr.Expression);
     }
 
     public string VisitLiteralExpression(Literal expr)

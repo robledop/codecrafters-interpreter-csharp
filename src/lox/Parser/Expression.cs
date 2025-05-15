@@ -34,7 +34,7 @@ public record Binary(IExpr Left, Token Op, IExpr Right) : IExpr
         => exprVisitor.VisitBinaryExpression(this);
 }
 
-public record Grouping(IExpr Expr) : IExpr
+public record Grouping(IExpr Expression) : IExpr
 {
     public TResult Accept<TResult>(IExprVisitor<TResult> exprVisitor)
         => exprVisitor.VisitGroupingExpression(this);

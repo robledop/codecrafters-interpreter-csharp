@@ -5,12 +5,14 @@ public interface IStmtVisitor<out TResult>
     TResult VisitBlockStatement(Block expr);
     TResult VisitClassStatement(Class expr);
     TResult VisitExpressionStatement(StmtExpression expr);
-    TResult VisitFunctionStatement(Function expr);
+    TResult VisitFunctionStatement(Function stmt);
     TResult VisitIfStatement(If expr);
     TResult VisitPrintStatement(Print expr);
-    TResult VisitReturnStatement(ReturnStmt expr);
-    TResult VisitVarStatement(Var expr);
-    TResult VisitWhileStatement(While expr);
+    TResult VisitReturnStatement(ReturnStmt stmt);
+    TResult VisitVarStatement(Var stmt);
+    TResult VisitWhileStatement(While stmt);
+    TResult VisitBreakStatement(Break stmt);
+    TResult VisitContinueStatement(Continue stmt);
 }
 
 // Visitable interface for all statements
@@ -71,4 +73,16 @@ public record While(IExpr Condition, IStmt Body) : IStmt
 {
     public TResult Accept<TResult>(IStmtVisitor<TResult> visitor)
         => visitor.VisitWhileStatement(this);
+}
+
+public record Break(Token Keyword) : IStmt
+{
+    public TResult Accept<TResult>(IStmtVisitor<TResult> visitor)
+        => visitor.VisitBreakStatement(this);
+}
+
+public record Continue(Token Keyword) : IStmt
+{
+    public TResult Accept<TResult>(IStmtVisitor<TResult> visitor)
+        => visitor.VisitContinueStatement(this);
 }

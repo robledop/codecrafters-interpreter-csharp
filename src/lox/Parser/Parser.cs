@@ -4,6 +4,7 @@ namespace LoxInterpreter.Parser;
 
 public class Parser(List<Token> tokens)
 {
+    readonly Stack<object?> _loopStack = new();
     int _current;
 
     // Used in earlier versions of the code
@@ -19,12 +20,13 @@ public class Parser(List<Token> tokens)
         }
     }
 
-    public List<IStmt?> Parse()
+    public List<IStmt> Parse()
     {
-        var statements = new List<IStmt?>();
+        var statements = new List<IStmt>();
         while (!IsAtEnd())
         {
-            statements.Add(Declaration());
+            var statement = Declaration();
+            if (statement != null) statements.Add(statement);
         }
 
         return statements;
@@ -54,6 +56,30 @@ public class Parser(List<Token> tokens)
         return Previous();
     }
 
+    Token Consume(TokenType type, string message)
+    {
+        if (Check(type)) return Advance();
+        throw Error(Peek(), message);
+    }
+
+    static ParseError Error(Token token, string message)
+    {
+        Lox.Report(token.Line, token.Type == EOF ? " at end" : $" at '{token.Lexeme}'", message);
+        return new ParseError(token, message);
+    }
+
+    void Synchronize()
+    {
+        Advance();
+
+        while (!IsAtEnd())
+        {
+            if (Previous().Type is SEMICOLON) return;
+            if (Peek().Type is CLASS or FUN or VAR or FOR or IF or WHILE or PRINT or RETURN) return;
+
+            Advance();
+        }
+    }
 
     // declaration    : varDecl | statement ;
     IStmt? Declaration()
@@ -105,9 +131,7 @@ public class Parser(List<Token> tokens)
 
         IExpr? initializer = null;
         if (Match(EQUAL))
-        {
             initializer = Expression();
-        }
 
         Consume(SEMICOLON, "Expect ';' after variable declaration.");
         return new Var(name, initializer);
@@ -122,7 +146,35 @@ public class Parser(List<Token> tokens)
         if (Match(RETURN)) return ReturnStatement();
         if (Match(WHILE)) return WhileStatement();
         if (Match(LEFT_BRACE)) return new Block(Block());
+        if (Match(BREAK)) return BreakStatement();
+        if (Match(CONTINUE)) return ContinueStatement();
         return ExpressionStatement();
+    }
+
+    // breakStmt      : "break" ";" ;
+    IStmt BreakStatement()
+    {
+        var keyword = Previous();
+        if (_loopStack.Count == 0)
+        {
+            Error(keyword, "break statement not inside a loop.");
+        }
+
+        Consume(SEMICOLON, "Expect ';' after break.");
+        return new Break(keyword);
+    }
+
+    // continueStmt   : "continue" ";" ;
+    IStmt ContinueStatement()
+    {
+        var keyword = Previous();
+        if (_loopStack.Count == 0)
+        {
+            Error(keyword, "continue statement not inside a loop.");
+        }
+
+        Consume(SEMICOLON, "Expect ';' after continue.");
+        return new Continue(keyword);
     }
 
     // returnStmt     : "return" expression? ";" ;
@@ -136,38 +188,37 @@ public class Parser(List<Token> tokens)
         return new ReturnStmt(keyword, value);
     }
 
+
     // forStmt        : "for" "(" ( varDecl | exprStmt | ";") expression? ";" expression? ")" statement ;
     IStmt ForStatement()
     {
         Consume(LEFT_PAREN, "Expect '(' after 'for'.");
 
         IStmt? initializer;
-        if (Match(VAR)) initializer = VarDeclaration();
-        else if (Match(SEMICOLON)) initializer = null;
+        if (Match(SEMICOLON)) initializer = null;
+        else if (Match(VAR)) initializer = VarDeclaration();
         else initializer = ExpressionStatement();
 
         IExpr? condition = null;
         if (!Check(SEMICOLON)) condition = Expression();
         Consume(SEMICOLON, "Expect ';' after loop condition.");
+        condition ??= new Literal(true);
 
         IExpr? increment = null;
         if (!Check(RIGHT_PAREN)) increment = Expression();
         Consume(RIGHT_PAREN, "Expect ')' after for clauses.");
 
+        _loopStack.Push(null);
         var body = Statement();
+        _loopStack.Pop();
 
         if (increment != null)
-        {
             body = new Block([body, new StmtExpression(increment)]);
-        }
 
-        condition ??= new Literal(true);
-        body = new While(condition, body);
+        var whileStmt = new While(condition, body);
 
         if (initializer != null)
-        {
-            body = new Block([initializer, body]);
-        }
+            body = new Block([initializer, whileStmt]);
 
         return body;
     }
@@ -179,7 +230,9 @@ public class Parser(List<Token> tokens)
         var condition = Expression();
         Consume(RIGHT_PAREN, "Expect ')' after condition.");
 
+        _loopStack.Push(null);
         var body = Statement();
+        _loopStack.Pop();
 
         return new While(condition, body);
     }
@@ -365,14 +418,8 @@ public class Parser(List<Token> tokens)
 
         while (true)
         {
-            if (Match(LEFT_PAREN))
-            {
-                expr = FinishCall(expr);
-            }
-            else
-            {
-                break;
-            }
+            if (Match(LEFT_PAREN)) expr = FinishCall(expr);
+            else break;
         }
 
         return expr;
@@ -406,16 +453,10 @@ public class Parser(List<Token> tokens)
         if (Match(FALSE)) return new Literal(false);
         if (Match(TRUE)) return new Literal(true);
         if (Match(NIL)) return new Literal(null);
-
         if (Match(NUMBER, STRING))
-        {
             return new Literal(Previous().Literal);
-        }
-
         if (Match(IDENTIFIER))
-        {
             return new Variable(Previous());
-        }
 
         // ReSharper disable once InvertIf
         if (Match(LEFT_PAREN))
@@ -426,31 +467,6 @@ public class Parser(List<Token> tokens)
         }
 
         throw Error(Peek(), "Expect expression.");
-    }
-
-    Token Consume(TokenType type, string message)
-    {
-        if (Check(type)) return Advance();
-        throw Error(Peek(), message);
-    }
-
-    static ParseError Error(Token token, string message)
-    {
-        Lox.Report(token.Line, token.Type == EOF ? " at end" : $" at '{token.Lexeme}'", message);
-        return new ParseError(token, message);
-    }
-
-    void Synchronize()
-    {
-        Advance();
-
-        while (!IsAtEnd())
-        {
-            if (Previous().Type == SEMICOLON) return;
-            if (Peek().Type is CLASS or FUN or VAR or FOR or IF or WHILE or PRINT or RETURN) return;
-
-            Advance();
-        }
     }
 }
 

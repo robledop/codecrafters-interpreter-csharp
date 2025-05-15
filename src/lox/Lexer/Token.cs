@@ -1,3 +1,3 @@
 namespace LoxInterpreter;
 
-public record Token(TokenType Type, string? Lexeme = null, object? Literal = null, int Line = 0);
+public record Token(TokenType Type, string? Lexeme = null, object? Literal = null, int Line = 0, int Column = 0);

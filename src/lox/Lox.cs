@@ -8,10 +8,8 @@ namespace LoxInterpreter;
 
 public static class Lox
 {
-    static Interpreter.Interpreter _interpreter = new();
     public static bool HadError { get; private set; }
     public static bool HadRuntimeError { get; private set; }
-    static LoxInterpreter.Interpreter.Interpreter Interpreter { get; } = new();
 
     public static void Error(int line, string message)
     {
@@ -60,14 +58,17 @@ public static class Lox
         {
             var tokens = Tokenize(source).ToList();
             var parser = new Parser.Parser(tokens);
-            var statements = parser.Parse();
-            if (statements.Count == 1 && statements[0] is StmtExpression expressionStmt)
+            var statements = parser.Parse().OfType<IStmt>().ToList();
+            var interpreter = new Interpreter.Interpreter();
+            var resolver = new Resolver(interpreter);
+            resolver.Resolve(statements);
+            if (statements is [StmtExpression expressionStmt])
             {
-                var result = Interpreter.Evaluate(expressionStmt.Expression);
+                var result = interpreter.Evaluate(expressionStmt.Expression);
                 Console.WriteLine(Stringify(result));
             }
 
-            _interpreter.Interpret(statements);
+            interpreter.Interpret(statements);
         }
         catch (RuntimeError e)
         {
@@ -84,8 +85,11 @@ public static class Lox
         {
             var tokens = Tokenize(source).ToList();
             var parser = new Parser.Parser(tokens);
-            var statements = parser.Parse();
+            var statements = parser.Parse().ToList();
             var interpreter = new Interpreter.Interpreter();
+            var resolver = new Resolver(interpreter);
+            resolver.Resolve(statements!);
+
             if (statements is [StmtExpression expressionStmt])
             {
                 var result = interpreter.Evaluate(expressionStmt.Expression);
@@ -128,15 +132,15 @@ public static class Lox
         switch (obj)
         {
             case double d:
-            {
-                var text = d.ToString(CultureInfo.InvariantCulture);
-                if (text.EndsWith(".0"))
                 {
-                    return text[0..^2];
-                }
+                    var text = d.ToString(CultureInfo.InvariantCulture);
+                    if (text.EndsWith(".0"))
+                    {
+                        return text[0..^2];
+                    }
 
-                break;
-            }
+                    break;
+                }
             case bool b:
                 return b ? "true" : "false";
             case null:

@@ -118,9 +118,13 @@ switch (command)
             var tokens = Lox.Tokenize(source).ToList();
             var parser = new Parser(tokens);
             var statements = parser.Parse();
-
             var interpreter = new Interpreter();
-            interpreter.Interpret(statements);
+            var resolver = new Resolver(interpreter);
+            resolver.Resolve(statements);
+            if (!Lox.HadRuntimeError)
+            {
+                interpreter.Interpret(statements);
+            }
         }
         catch (RuntimeError e)
         {

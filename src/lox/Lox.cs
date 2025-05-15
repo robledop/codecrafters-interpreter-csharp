@@ -16,6 +16,18 @@ public static class Lox
         Report(line, "", message);
     }
 
+    public static void Error(Token token, string message)
+    {
+        if (token.Type == TokenType.EOF)
+        {
+            Report(token.Line, " at end", message);
+        }
+        else
+        {
+            Report(token.Line, $" at '{token.Lexeme}'", message);
+        }
+    }
+
     public static void Report(int line, string where, string message)
     {
         Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
@@ -58,7 +70,7 @@ public static class Lox
         {
             var tokens = Tokenize(source).ToList();
             var parser = new Parser.Parser(tokens);
-            var statements = parser.Parse().OfType<IStmt>().ToList();
+            var statements = parser.Parse().ToList();
             var interpreter = new Interpreter.Interpreter();
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);

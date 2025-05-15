@@ -91,7 +91,7 @@ public record Resolver(Interpreter Interpreter) : IExprVisitor<object?>, IStmtVi
         if (_scopes.Any() && _scopes.Peek().TryGetValue(expr.Name.Lexeme!, out var isDefined))
         {
             if (!isDefined)
-                throw new RuntimeError(expr.Name, "Can't read local variable in its own initializer.");
+                Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
         }
 
         ResolveLocal(expr, expr.Name);

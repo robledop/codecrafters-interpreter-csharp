@@ -8,6 +8,7 @@ namespace LoxInterpreter;
 
 public static class Lox
 {
+    static readonly Interpreter.Interpreter Interpreter = new();
     public static bool HadError { get; private set; }
     public static bool HadRuntimeError { get; private set; }
 
@@ -36,22 +37,38 @@ public static class Lox
         HadRuntimeError = true;
     }
 
-    public static async Task RunFile(string path)
-    {
-        var contents = await File.ReadAllTextAsync(path);
-        Run(contents);
-        if (HadError)
-        {
-            Environment.Exit(65);
-        }
-    }
-
-    public static IEnumerable<Token> Tokenize(string source)
+    public static IEnumerable<Token> GetTokens(string source)
     {
         HadError = false;
         HadRuntimeError = false;
         var lexer = new Lexer(source);
-        return lexer.Tokens;
+        var tokens = lexer.Tokens;
+
+        return tokens;
+    }
+
+    public static void Tokenize(string source)
+    {
+        var tokens = GetTokens(source);
+
+        foreach (var token in tokens)
+        {
+            if (token.Literal is double literal)
+            {
+                var number = literal % 1 == 0
+                    ? literal.ToString("F1")
+                    : literal.ToString("G");
+
+                Console.WriteLine($"{token.Type} {token.Lexeme} {number}");
+            }
+            else
+            {
+                Console.WriteLine($"{token.Type} {token.Lexeme} {token.Literal ?? "null"}");
+            }
+        }
+
+        if (HadError) Environment.Exit(65);
+        if (HadRuntimeError) Environment.Exit(70);
     }
 
     public static IExpr? ParseExpression(List<Token> tokens)
@@ -60,33 +77,68 @@ public static class Lox
         return parser.ParseExpression();
     }
 
-    public static void Run(string source)
+    public static void Parse(string source)
+    {
+        var tokens = GetTokens(source);
+        var parser = new Parser.Parser(tokens.ToList());
+        var expression = parser.ParseExpression();
+        if (expression == null)
+        {
+            Environment.Exit(65);
+        }
+
+        var printer = new AstPrinter();
+        var result = printer.Print(expression);
+        Console.WriteLine(result);
+        if (HadError) Environment.Exit(65);
+        if (HadRuntimeError) Environment.Exit(70);
+    }
+
+    public static void Run(string source, bool test = false)
     {
         try
         {
-            var tokens = Tokenize(source).ToList();
-            var parser = new Parser.Parser(tokens);
+            var tokens = GetTokens(source);
+            var parser = new Parser.Parser(tokens.ToList());
             var statements = parser.Parse().ToList();
-
-            if (HadError) Environment.Exit(65);
-            if (HadRuntimeError) Environment.Exit(70);
-
-            var interpreter = new Interpreter.Interpreter();
-            var resolver = new Resolver(interpreter);
+            var resolver = new Resolver(Interpreter);
             resolver.Resolve(statements);
 
+            if (!HadRuntimeError && !HadError)
+            {
+                Interpreter.Interpret(statements);
+            }
+        }
+        catch (RuntimeError e)
+        {
+            RuntimeError(e);
+        }
+
+        if (!test)
+        {
             if (HadError) Environment.Exit(65);
             if (HadRuntimeError) Environment.Exit(70);
+        }
+    }
 
-            if (statements is [StmtExpression expressionStmt])
-            {
-                var result = interpreter.Evaluate(expressionStmt.Expression);
-                Console.WriteLine(Stringify(result));
-                if (HadError) Environment.Exit(65);
-                if (HadRuntimeError) Environment.Exit(70);
-            }
+    public static void Evaluate(string source)
+    {
+        HadError = false;
+        HadRuntimeError = false;
+        var lexer = new Lexer(source);
 
-            interpreter.Interpret(statements);
+        var tokens = lexer.Tokens.ToList();
+        var parser = new Parser.Parser(tokens);
+        var expression = parser.ParseExpression();
+        if (expression == null)
+        {
+            Environment.Exit(65);
+        }
+
+        try
+        {
+            var result = Interpreter.Evaluate(expression);
+            Console.WriteLine(Stringify(result));
         }
         catch (RuntimeError e)
         {
@@ -95,36 +147,6 @@ public static class Lox
 
         if (HadError) Environment.Exit(65);
         if (HadRuntimeError) Environment.Exit(70);
-    }
-
-    public static void TestRun(string source)
-    {
-        try
-        {
-            var tokens = Tokenize(source).ToList();
-            var parser = new Parser.Parser(tokens);
-            var statements = parser.Parse().ToList();
-            var interpreter = new Interpreter.Interpreter();
-            var resolver = new Resolver(interpreter);
-            resolver.Resolve(statements!);
-
-            if (HadError)
-            {
-                Environment.Exit(65);
-            }
-
-            if (statements is [StmtExpression expressionStmt])
-            {
-                var result = interpreter.Evaluate(expressionStmt.Expression);
-                Console.WriteLine(Stringify(result));
-            }
-
-            interpreter.Interpret(statements);
-        }
-        catch (RuntimeError e)
-        {
-            RuntimeError(e);
-        }
     }
 
     public static void RunPrompt()

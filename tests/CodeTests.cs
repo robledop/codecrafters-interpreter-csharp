@@ -530,7 +530,6 @@ public partial class CodeTests(ITestOutputHelper testOutput)
         const string EXPECTED_OUTPUT = """
                                        [line 1] Error at '(': Expect function name.
                                        [line 3] Error at '}': Expect expression.
-                                       Hello
 
                                        """;
 
@@ -799,6 +798,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     [Fact]
     public void Break()
     {
+        /* language=Java */
         const string CODE = """
                             var i = 0;
                             while (i < 10) {
@@ -916,7 +916,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
         Console.SetOut(sw);
         Console.SetError(sw);
 
-        Lox.TestRun(code);
+        Lox.Run(code, test: true);
         var output = sw.ToString();
 
         testOutput.WriteLine(output);
@@ -929,7 +929,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
         Console.SetOut(sw);
         Console.SetError(sw);
 
-        Lox.TestRun(code);
+        Lox.Run(code, test: true);
         var output = sw.ToString();
 
         testOutput.WriteLine(output);

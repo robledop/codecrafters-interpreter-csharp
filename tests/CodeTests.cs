@@ -875,6 +875,39 @@ public partial class CodeTests(ITestOutputHelper testOutput)
         TestRun(CODE, EXPECTED_OUTPUT);
     }
 
+    [Fact]
+    public void SelfInitialization1()
+    {
+        /* language=Java */
+        const string CODE = """
+                            // Helper function that simply returns its argument
+                            fun returnArg(arg) {
+                              return arg;
+                            }
+
+                            // Declare global variable 'b'
+                            var b = "global";
+
+                            {
+                              // Local variable declaration
+                              var a = "first";
+
+                              // Attempting to initialize local variable 'b'
+                              // using local variable 'b'
+                              // through a function call
+                              var b = returnArg(b); // expect compile error
+                              print b;
+                            }
+
+                            var b = b + " updated";
+                            print b;
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       [line 16] Error at 'b': Can't read local variable in its own initializer.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
 
 
     void TestRun(string code, string expected)

@@ -19,13 +19,9 @@ public static class Lox
     public static void Error(Token token, string message)
     {
         if (token.Type == TokenType.EOF)
-        {
             Report(token.Line, " at end", message);
-        }
         else
-        {
             Report(token.Line, $" at '{token.Lexeme}'", message);
-        }
     }
 
     public static void Report(int line, string where, string message)
@@ -102,6 +98,11 @@ public static class Lox
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements!);
 
+            if (HadError)
+            {
+                Environment.Exit(65);
+            }
+
             if (statements is [StmtExpression expressionStmt])
             {
                 var result = interpreter.Evaluate(expressionStmt.Expression);
@@ -144,15 +145,15 @@ public static class Lox
         switch (obj)
         {
             case double d:
+            {
+                var text = d.ToString(CultureInfo.InvariantCulture);
+                if (text.EndsWith(".0"))
                 {
-                    var text = d.ToString(CultureInfo.InvariantCulture);
-                    if (text.EndsWith(".0"))
-                    {
-                        return text[0..^2];
-                    }
-
-                    break;
+                    return text[0..^2];
                 }
+
+                break;
+            }
             case bool b:
                 return b ? "true" : "false";
             case null:

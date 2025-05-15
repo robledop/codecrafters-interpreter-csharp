@@ -821,6 +821,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     [Fact]
     public void Continue()
     {
+        /* language=Java */
         const string CODE = """
                             var i = 0;
                             while (i < 10) {
@@ -839,6 +840,36 @@ public partial class CodeTests(ITestOutputHelper testOutput)
                                        8
                                        9
                                        10
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+    [Fact]
+    public void Binding()
+    {
+        /* language=Java */
+        const string CODE = """
+                            // This program uses a for loop to print the
+                            // numbers from 0 to 2
+                            // The loop initializer is ignored in this loop
+                            var hello = 0;
+                            for (; hello < 2; hello = hello + 1) print hello;
+
+                            // This program uses a for loop to print the
+                            // numbers from 0 to 2
+                            // The loop increment clause is ignored in this
+                            // loop
+                            for (var world = 0; world < 2;) {
+                              print world;
+                             world = world + 1;
+                            }
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       0
+                                       1
+                                       0
+                                       1
 
                                        """;
         TestRun(CODE, EXPECTED_OUTPUT);

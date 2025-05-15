@@ -202,7 +202,6 @@ public class Parser(List<Token> tokens)
         IExpr? condition = null;
         if (!Check(SEMICOLON)) condition = Expression();
         Consume(SEMICOLON, "Expect ';' after loop condition.");
-        condition ??= new Literal(true);
 
         IExpr? increment = null;
         if (!Check(RIGHT_PAREN)) increment = Expression();
@@ -215,10 +214,11 @@ public class Parser(List<Token> tokens)
         if (increment != null)
             body = new Block([body, new StmtExpression(increment)]);
 
-        var whileStmt = new While(condition, body);
+        condition ??= new Literal(true);
+        body = new While(condition, body);
 
         if (initializer != null)
-            body = new Block([initializer, whileStmt]);
+            body = new Block([initializer, body]);
 
         return body;
     }

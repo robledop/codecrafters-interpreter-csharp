@@ -121,7 +121,7 @@ switch (command)
             var interpreter = new Interpreter();
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);
-            if (!Lox.HadRuntimeError)
+            if (!Lox.HadRuntimeError && !Lox.HadError)
             {
                 interpreter.Interpret(statements);
             }

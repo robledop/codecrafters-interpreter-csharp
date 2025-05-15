@@ -70,6 +70,12 @@ public static class Lox
             var interpreter = new Interpreter.Interpreter();
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);
+
+            if (HadError)
+            {
+                Environment.Exit(65);
+            }
+
             if (statements is [StmtExpression expressionStmt])
             {
                 var result = interpreter.Evaluate(expressionStmt.Expression);

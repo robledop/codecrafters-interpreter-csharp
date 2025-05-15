@@ -70,6 +70,7 @@ public static class Lox
 
             if (HadError) Environment.Exit(65);
             if (HadRuntimeError) Environment.Exit(70);
+
             var interpreter = new Interpreter.Interpreter();
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);
@@ -81,6 +82,8 @@ public static class Lox
             {
                 var result = interpreter.Evaluate(expressionStmt.Expression);
                 Console.WriteLine(Stringify(result));
+                if (HadError) Environment.Exit(65);
+                if (HadRuntimeError) Environment.Exit(70);
             }
 
             interpreter.Interpret(statements);

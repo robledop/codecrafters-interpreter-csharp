@@ -1,4 +1,4 @@
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter;
 
 public class LoxEnvironment
 {
@@ -16,10 +16,11 @@ public class LoxEnvironment
             return value;
         }
 
-        if (_enclosing != null)
-        {
-            return _enclosing.Get(token);
-        }
+        // This is in the book, but is it really necessary?
+        // if (_enclosing != null)
+        // {
+        //     return _enclosing.Get(token);
+        // }
 
         throw new RuntimeError(token, $"Undefined variable '{token.Lexeme}'.");
     }
@@ -34,11 +35,12 @@ public class LoxEnvironment
             return;
         }
 
-        if (_enclosing != null)
-        {
-            _enclosing.Assign(name, value);
-            return;
-        }
+        // This is in the book, but is it really necessary?
+        // if (_enclosing != null)
+        // {
+        //     _enclosing.Assign(name, value);
+        //     return;
+        // }
 
         throw new RuntimeError(name, $"Undefined variable '{name.Lexeme}'.");
     }

@@ -1,5 +1,5 @@
-using LoxInterpreter;
-using LoxInterpreter.Parser;
+using CSharpLox;
+using CSharpLox.Parser;
 
 namespace tests;
 

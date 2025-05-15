@@ -1,15 +1,16 @@
-using LoxInterpreter.Parser;
-using static LoxInterpreter.TokenType;
+using CSharpLox.Interpreter.Functions;
+using CSharpLox.Parser;
+using static CSharpLox.TokenType;
 
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter;
 
-public class Interpreter : IExprVisitor<object?>, IStmtVisitor<object?>
+public class LoxInterpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 {
     readonly LoxEnvironment _globals = new();
     readonly Dictionary<IExpr, int> _locals = new();
     LoxEnvironment _environment;
 
-    public Interpreter()
+    public LoxInterpreter()
     {
         _environment = _globals;
         _globals.Define("clock", new Clock());

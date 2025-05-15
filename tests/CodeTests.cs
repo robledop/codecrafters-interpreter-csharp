@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using LoxInterpreter;
+using CSharpLox;
 using Xunit.Abstractions;
 
 namespace tests;
@@ -539,6 +539,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     [Fact]
     public void SyntaxErrorFunctionNotCallable()
     {
+        /* language=Java */
         const string CODE = """
                             85();
 
@@ -554,6 +555,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     [Fact]
     public void SyntaxErrorFunctionNotCallable2()
     {
+        /* language=Java */
         const string CODE = """
                             false();
 
@@ -569,13 +571,13 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     [Fact]
     public void SyntaxErrorFunctionCallTooManyArguments()
     {
+        /* language=Java */
         const string CODE = """
                             fun add(a, b) {
                               return a + b;
                             }
 
                             print add(1, 2, 3);
-
                             """;
         const string EXPECTED_OUTPUT = """
                                        Expected 2 arguments but got 3.
@@ -588,13 +590,13 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     [Fact]
     public void SyntaxErrorFunctionCallTooFewArguments()
     {
+        /* language=Java */
         const string CODE = """
                             fun add(a, b) {
                               return a + b;
                             }
 
                             print add(1);
-
                             """;
         const string EXPECTED_OUTPUT = """
                                        Expected 2 arguments but got 1.

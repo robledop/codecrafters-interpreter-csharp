@@ -1,14 +1,14 @@
 using System.Globalization;
-using LoxInterpreter.Interpreter;
-using LoxInterpreter.Parser;
+using CSharpLox.Interpreter;
+using CSharpLox.Parser;
 using Environment = System.Environment;
 
 
-namespace LoxInterpreter;
+namespace CSharpLox;
 
 public static class Lox
 {
-    static readonly Interpreter.Interpreter Interpreter = new();
+    static readonly LoxInterpreter Interpreter = new();
     public static bool HadError { get; private set; }
     public static bool HadRuntimeError { get; private set; }
 
@@ -156,9 +156,7 @@ public static class Lox
             Console.Write("> ");
             var line = Console.ReadLine();
             if (line == null)
-            {
                 break;
-            }
 
             Run(line);
             HadError = false;

@@ -1,4 +1,4 @@
-namespace LoxInterpreter;
+namespace CSharpLox;
 
 public class Lexer
 {

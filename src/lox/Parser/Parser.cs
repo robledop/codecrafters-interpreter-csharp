@@ -1,6 +1,6 @@
-using static LoxInterpreter.TokenType;
+using static CSharpLox.TokenType;
 
-namespace LoxInterpreter.Parser;
+namespace CSharpLox.Parser;
 
 public class Parser(List<Token> tokens)
 {
@@ -354,7 +354,6 @@ public class Parser(List<Token> tokens)
         return expr;
     }
 
-
     // comparison: term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     IExpr Comparison()
     {
@@ -384,7 +383,6 @@ public class Parser(List<Token> tokens)
 
         return expr;
     }
-
 
     // factor: unary ( ( "/" | "*" ) unary )* ;
     IExpr Factor()

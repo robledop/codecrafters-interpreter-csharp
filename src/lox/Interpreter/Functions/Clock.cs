@@ -1,8 +1,8 @@
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter.Functions;
 
 public class Clock : ICallable
 {
-    public object Call(Interpreter interpreter, List<object> arguments)
+    public object Call(LoxInterpreter loxInterpreter, List<object> arguments)
     {
         if (arguments.Count != 0)
         {

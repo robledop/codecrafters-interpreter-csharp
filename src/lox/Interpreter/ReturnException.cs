@@ -1,4 +1,4 @@
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter;
 
 public class ReturnException(object? value) : Exception
 {

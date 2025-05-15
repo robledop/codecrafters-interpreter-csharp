@@ -1,4 +1,4 @@
-using LoxInterpreter;
+using CSharpLox;
 using Environment = System.Environment;
 
 var command = args[0];

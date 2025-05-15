@@ -1,8 +1,8 @@
-using LoxInterpreter.Parser;
+using CSharpLox.Parser;
 
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter;
 
-public record Resolver(Interpreter Interpreter) : IExprVisitor<object?>, IStmtVisitor<object?>
+public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, IStmtVisitor<object?>
 {
     enum FunctionType
     {
@@ -197,19 +197,19 @@ public record Resolver(Interpreter Interpreter) : IExprVisitor<object?>, IStmtVi
 
     void ResolveLocal(IExpr expr, Token name)
     {
-        // Java stores the Stack elements in reverse order compared to C#
+        // Java stores the Stack elements in reverse order compared to C#.
+        // So, this is different from the book.
         for (int i = 0; i < _scopes.Count; i++)
         {
             if (_scopes.ElementAt(i).ContainsKey(name.Lexeme!))
             {
-                Interpreter.Resolve(expr, i);
+                LoxInterpreter.Resolve(expr, i);
                 return;
             }
         }
     }
 
     public void Resolve(List<IStmt> statements) => statements.ForEach(Resolve);
-
     void Resolve(IStmt stmt) => stmt.Accept(this);
     void Resolve(IExpr expr) => expr.Accept(this);
     void BeginScope() => _scopes.Push(new Dictionary<string, bool>());

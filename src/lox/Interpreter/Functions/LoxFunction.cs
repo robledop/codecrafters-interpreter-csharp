@@ -1,10 +1,10 @@
-using LoxInterpreter.Parser;
+using CSharpLox.Parser;
 
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter.Functions;
 
 public class LoxFunction(Function declaration, LoxEnvironment closure) : ICallable
 {
-    public object? Call(Interpreter interpreter, List<object> arguments)
+    public object? Call(LoxInterpreter loxInterpreter, List<object> arguments)
     {
         var environment = new LoxEnvironment(closure);
         for (var i = 0; i < declaration.Parameters.Count; i++)
@@ -15,7 +15,7 @@ public class LoxFunction(Function declaration, LoxEnvironment closure) : ICallab
 
         try
         {
-            interpreter.ExecuteBlock(declaration.Body, environment);
+            loxInterpreter.ExecuteBlock(declaration.Body, environment);
         }
         catch (ReturnException ret)
         {

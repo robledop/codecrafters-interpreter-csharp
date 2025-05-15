@@ -1,11 +1,6 @@
-namespace LoxInterpreter.Interpreter;
+namespace CSharpLox.Interpreter;
 
-public class RuntimeError : Exception
+public class RuntimeError(Token token, string message) : Exception(message)
 {
-    public RuntimeError(Token token, string message) : base(message)
-    {
-        Token = token;
-    }
-
-    public Token Token { get; }
+    public Token Token { get; } = token;
 }

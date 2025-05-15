@@ -1,27 +1,10 @@
 using System.Text;
 
-namespace LoxInterpreter.Parser;
+namespace CSharpLox.Parser;
 
 public class AstPrinter : IExprVisitor<string>
 {
     public string Print(IExpr expr) => expr.Accept(this);
-
-    // public string Visit<TExpr>(TExpr expr) where TExpr : IExpr
-    //     => expr switch
-    //     {
-    //         Assign { Name.Lexeme: not null } assign => Assign(assign.Name.Lexeme, assign.Value),
-    //         Binary { Op.Lexeme: not null } binary =>
-    //             Parenthesize(binary.Op.Lexeme, binary.Left, binary.Right),
-    //         Grouping grouping => Parenthesize("group", grouping.Expr),
-    //         Literal { Value: double d } literal when (double)literal.Value % 1 == 0 => d.ToString("F1"),
-    //         Literal { Value: double d } => d.ToString("G"),
-    //         Literal { Value: true } => "true",
-    //         Literal { Value: false } => "false",
-    //         Literal { Value: null } => "nil",
-    //         Literal { Value: not null } literal => literal.Value.ToString()!,
-    //         Unary { Op.Lexeme: not null } unary => Parenthesize(unary.Op.Lexeme, unary.Right),
-    //         _ => throw new NotImplementedException($"Unknown expression type: {expr.GetType()}")
-    //     };
 
     string Assign(string name, IExpr value)
     {

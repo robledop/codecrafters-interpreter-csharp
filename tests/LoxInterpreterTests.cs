@@ -1,12 +1,13 @@
-using LoxInterpreter;
-using LoxInterpreter.Parser;
+using CSharpLox;
+using CSharpLox.Interpreter;
+using CSharpLox.Parser;
 using Xunit.Abstractions;
-using static LoxInterpreter.TokenType;
+using static CSharpLox.TokenType;
 
 namespace tests;
 
 [Collection("Sequential")]
-public class InterpreterTests
+public class LoxInterpreterTests
 {
     [Fact]
     public void TestBinaryExpressionAddition()
@@ -16,7 +17,7 @@ public class InterpreterTests
         var op = new Token(PLUS, "+", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<double>(result);
@@ -31,7 +32,7 @@ public class InterpreterTests
         var op = new Token(MINUS, "-", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<double>(result);
@@ -46,7 +47,7 @@ public class InterpreterTests
         var op = new Token(STAR, "*", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<double>(result);
@@ -61,7 +62,7 @@ public class InterpreterTests
         var op = new Token(SLASH, "/", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<double>(result);
@@ -76,7 +77,7 @@ public class InterpreterTests
         var op = new Token(PLUS, "+", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<string>(result);
@@ -91,7 +92,7 @@ public class InterpreterTests
         var op = new Token(GREATER, ">", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<bool>(result);
@@ -106,7 +107,7 @@ public class InterpreterTests
         var op = new Token(LESS, "<", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<bool>(result);
@@ -121,7 +122,7 @@ public class InterpreterTests
         var op = new Token(EQUAL_EQUAL, "==", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<bool>(result);
@@ -136,7 +137,7 @@ public class InterpreterTests
         var op = new Token(BANG_EQUAL, "!=", null, 1);
         var binaryExpr = new Binary(left, op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(binaryExpr);
 
         Assert.IsType<bool>(result);
@@ -150,7 +151,7 @@ public class InterpreterTests
         var op = new Token(MINUS, "-", null, 1);
         var unaryExpr = new Unary(op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(unaryExpr);
 
         Assert.IsType<double>(result);
@@ -164,7 +165,7 @@ public class InterpreterTests
         var op = new Token(BANG, "!", null, 1);
         var unaryExpr = new Unary(op, right);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(unaryExpr);
 
         Assert.IsType<bool>(result);
@@ -177,7 +178,7 @@ public class InterpreterTests
         var inner = new Literal(5.0);
         var groupingExpr = new Grouping(inner);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(groupingExpr);
 
         Assert.IsType<double>(result);
@@ -189,7 +190,7 @@ public class InterpreterTests
     {
         var literalExpr = new Literal(5.0);
 
-        var interpreter = new LoxInterpreter.Interpreter.Interpreter();
+        var interpreter = new LoxInterpreter();
         var result = interpreter.Evaluate(literalExpr);
 
         Assert.IsType<double>(result);

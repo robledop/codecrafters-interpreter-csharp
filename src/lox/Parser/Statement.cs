@@ -1,4 +1,4 @@
-namespace LoxInterpreter.Parser;
+namespace CSharpLox.Parser;
 
 public interface IStmtVisitor<out TResult>
 {

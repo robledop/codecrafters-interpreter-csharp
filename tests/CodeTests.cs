@@ -911,6 +911,23 @@ public partial class CodeTests(ITestOutputHelper testOutput)
         TestRun(CODE, EXPECTED_OUTPUT);
     }
 
+    [Fact]
+    public void VariableRedeclaration()
+    {
+        /* language=Java */
+        const string CODE = """
+                            {
+                                var a = 1;
+                                var a = 2;
+                            }
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       [line 3] Error at 'a': Variable already declared in this scope.
+                                       
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
 
     void TestRun(string code, string expected)
     {

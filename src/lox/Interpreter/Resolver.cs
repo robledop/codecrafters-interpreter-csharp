@@ -220,9 +220,9 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
         if (!_scopes.Any()) return;
         var scope = _scopes.Peek();
         if (scope.ContainsKey(name.Lexeme!))
-            throw new RuntimeError(name, $"Variable '{name.Lexeme}' already declared in this scope.");
-
-        scope.Add(name.Lexeme!, false);
+            Lox.Error(name, $"Variable already declared in this scope.");
+        else
+            scope.Add(name.Lexeme!, false);
     }
 
     void Define(Token name)

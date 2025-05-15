@@ -71,10 +71,8 @@ public static class Lox
             var resolver = new Resolver(interpreter);
             resolver.Resolve(statements);
 
-            if (HadError)
-            {
-                Environment.Exit(65);
-            }
+            if (HadError) Environment.Exit(65);
+            if (HadRuntimeError) Environment.Exit(70);
 
             if (statements is [StmtExpression expressionStmt])
             {

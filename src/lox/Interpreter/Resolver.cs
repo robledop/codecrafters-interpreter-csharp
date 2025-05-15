@@ -145,7 +145,7 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
     public object? VisitReturnStatement(ReturnStmt stmt)
     {
         if (_currentFunction == FunctionType.NONE)
-            throw new RuntimeError(stmt.Keyword, "Cannot return from top-level code.");
+            Lox.Error(stmt.Keyword, "Can't return from top-level code.");
 
         if (_currentFunction == FunctionType.INITIALIZER && stmt.Value is not null)
             throw new RuntimeError(stmt.Keyword, "Cannot return a value from an initializer.");

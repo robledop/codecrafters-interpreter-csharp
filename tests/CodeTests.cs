@@ -912,6 +912,25 @@ public partial class CodeTests(ITestOutputHelper testOutput)
     }
 
     [Fact]
+    public void InvalidReturn()
+    {
+        /* language=Java */
+        const string CODE = """
+                            fun foo() {
+                              return "at function scope is ok";
+                            }
+
+                            return;
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       [line 0] Error at 'return': Can't return from top-level code.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
     public void VariableRedeclaration()
     {
         /* language=Java */
@@ -923,11 +942,10 @@ public partial class CodeTests(ITestOutputHelper testOutput)
                             """;
         const string EXPECTED_OUTPUT = """
                                        [line 3] Error at 'a': Variable already declared in this scope.
-                                       
+
                                        """;
         TestRun(CODE, EXPECTED_OUTPUT);
     }
-
 
     void TestRun(string code, string expected)
     {

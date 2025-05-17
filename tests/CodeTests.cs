@@ -1232,6 +1232,65 @@ public partial class CodeTests(ITestOutputHelper testOutput)
 
 
     [Fact]
+    public void ClassInheritMethodOverride()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class A {
+                              method() {
+                                print "A method";
+                              }
+                            }
+                            
+                            // B inherits method `method` from A
+                            // and overrides it with a new implementation
+                            class B < A {
+                              method() {
+                                print "B method";
+                              }
+                            }
+                            
+                            var b = B();
+                            b.method();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       B method
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void Super()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Doughnut {
+                              cook() {
+                                print "Fry until golden brown.";
+                              }
+                            }
+                            
+                            // Super can be used to call the overridden method
+                            // of the parent class
+                            class BostonCream < Doughnut {
+                              cook() {
+                                super.cook();
+                              }
+                            }
+                            
+                            BostonCream().cook();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Fry until golden brown.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
     public void VariableRedeclaration()
     {
         /* language=Java */

@@ -2,10 +2,10 @@ namespace CSharpLox.Interpreter;
 
 public class LoxEnvironment
 {
-    readonly LoxEnvironment? _enclosing;
+    public LoxEnvironment? Enclosing { get; set; }
     readonly Dictionary<string, object?> _values = new();
 
-    public LoxEnvironment(LoxEnvironment? enclosing = null) => _enclosing = enclosing;
+    public LoxEnvironment(LoxEnvironment? enclosing = null) => Enclosing = enclosing;
 
     public void Define(string name, object? value) => _values[name] = value;
 
@@ -52,7 +52,7 @@ public class LoxEnvironment
         var environment = this;
         for (var i = 0; i < distance; i++)
         {
-            environment = environment._enclosing ?? throw new RuntimeError(token, "Enclosing environment not found.");
+            environment = environment.Enclosing ?? throw new RuntimeError(token, "Enclosing environment not found.");
         }
 
         return environment;

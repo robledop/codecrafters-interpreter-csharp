@@ -76,7 +76,14 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
 
     public object? VisitSuperExpression(Super expr)
     {
-        throw new NotImplementedException();
+        if (_currentClass == ClassType.NONE)
+            Lox.Error(expr.Keyword, "Can't use 'super' outside of a class.");
+
+        if (_currentClass != ClassType.SUBCLASS)
+            Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
+
+        ResolveLocal(expr, expr.Keyword);
+        return null;
     }
 
     public object? VisitThisExpression(This expr)
@@ -128,6 +135,14 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
         if (stmt.SuperClass is not null)
             Resolve(stmt.SuperClass);
 
+        if (stmt.SuperClass is not null)
+        {
+            _currentClass = ClassType.SUBCLASS;
+            BeginScope();
+            _scopes.Peek().Add("super", true);
+        }
+
+
         BeginScope();
 
         _scopes.Peek().Add("this", true);
@@ -141,6 +156,8 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
         }
 
         EndScope();
+
+        if (stmt.SuperClass is not null) EndScope();
 
         _currentClass = enclosingClass;
 

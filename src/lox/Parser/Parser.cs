@@ -485,6 +485,13 @@ public class Parser(List<Token> tokens)
         if (Match(NUMBER, STRING)) return new Literal(Previous().Literal);
         if (Match(THIS)) return new This(Previous());
         if (Match(IDENTIFIER)) return new Variable(Previous());
+        if (Match(SUPER))
+        {
+            var keyword = Previous();
+            Consume(DOT, "Expect '.' after 'super'.");
+            var method = Consume(IDENTIFIER, "Expect superclass method name.");
+            return new Super(keyword, method);
+        }
 
         // ReSharper disable once InvertIf
         if (Match(LEFT_PAREN))

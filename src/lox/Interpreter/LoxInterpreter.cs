@@ -201,7 +201,15 @@ public class LoxInterpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitSuperExpression(Super expr)
     {
-        throw new NotImplementedException();
+        var distance = _locals[expr];
+        var superclass = (LoxClass?)_environment.GetAt(distance, new Token(CLASS, "super", null, -1));
+        var instance = (LoxInstance?)_environment.GetAt(distance - 1, new Token(THIS, "this", null, -1));
+        var method = superclass?.FindMethod(expr.Method.Lexeme!);
+        if (method is null)
+            throw new RuntimeError(expr.Method, $"Undefined property '{expr.Method.Lexeme}'.");
+        if (instance != null) return method.Bind(instance);
+
+        throw new RuntimeError(expr.Method, "Superclass must be a class.");
     }
 
     public object? VisitBlockStatement(Block expr)
@@ -222,6 +230,12 @@ public class LoxInterpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         }
 
         _environment.Define(stmt.Name.Lexeme!, null);
+        if (superClass is not null)
+        {
+            _environment = new LoxEnvironment(_environment);
+            _environment.Define("super", superClass);
+        }
+
         var methods = new Dictionary<string, LoxFunction>();
         foreach (var method in stmt.Methods)
         {
@@ -230,6 +244,12 @@ public class LoxInterpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         }
 
         var klass = new LoxClass(stmt.Name.Lexeme!, (LoxClass?)superClass, methods);
+        if (superClass is not null)
+        {
+            _environment = _environment.Enclosing ??
+                           throw new RuntimeError(stmt.Name, "Enclosing environment not found.");
+        }
+
         _environment.Assign(stmt.Name, klass);
         return null;
     }

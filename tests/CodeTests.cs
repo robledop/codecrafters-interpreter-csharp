@@ -923,7 +923,285 @@ public partial class CodeTests(ITestOutputHelper testOutput)
                             return;
                             """;
         const string EXPECTED_OUTPUT = """
-                                       [line 0] Error at 'return': Can't return from top-level code.
+                                       [line 5] Error at 'return': Can't return from top-level code.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void ClassDeclaration()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class DevonshireCream { }
+                            print DevonshireCream;
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       DevonshireCream
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+    [Fact]
+    public void ClassInstantiation()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Bagel {}
+                            var bagel = Bagel();
+                            print bagel; 
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Bagel instance
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void ClassMethod()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Bacon {
+                              eat() {
+                                print "Crunch crunch crunch!";
+                              }
+                            }
+
+                            Bacon().eat();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Crunch crunch crunch!
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void ClassGetterAndSetter()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Box {
+                            }
+
+                            var box = Box();
+                            box.size = 10;
+                            print box.size;
+
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       10
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void This1()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Cake {
+                              taste() {
+                                var adjective = "delicious";
+                                print "The " + this.flavor + " cake is " + adjective + "!";
+                              }
+                            }
+
+                            var cake = Cake();
+                            cake.flavor = "German chocolate";
+                            cake.taste();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       The German chocolate cake is delicious!
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void This2()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Cake {
+                              taste() {
+                                var adjective = "delicious";
+                                print "The " + this.flavor + " cake is " + adjective + "!";
+                              }
+                            }
+
+                            var cake = Cake();
+                            cake.flavor = "German chocolate";
+                            var method = cake.taste;
+                            method();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       The German chocolate cake is delicious!
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void ThisOutsideClass1()
+    {
+        /* language=Java */
+        const string CODE = """
+                            print this;
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       [line 1] Error at 'this': Can't use 'this' outside of a class.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void ThisOutsideClass2()
+    {
+        /* language=Java */
+        const string CODE = """
+                            fun notAMethod() {
+                              print this;
+                            }
+                            
+                            notAMethod();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       [line 2] Error at 'this': Can't use 'this' outside of a class.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void Init()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Foo {
+                              init() {
+                                this.bar = 42;
+                              }
+                            }
+                            var foo = Foo();
+                            print foo.bar;
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       42
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void InitMustNotReturn()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Foo {
+                              init() {
+                                return "something else";
+                              }
+                            }
+                            var foo = Foo();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       [line 3] Error at 'return': Cannot return a value from an initializer.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void InitEarlyReturnShouldReturnThis()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Foo {
+                              init(a) {
+                                if (a == 1) return;
+                                print "Not 1";
+                              }
+                            }
+                            var foo = Foo(1);
+                            print foo.init(1);
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Foo instance
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void InitReturnsThis()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Foo {
+                              init() {
+                                this.bar = 42;
+                              }
+                            }
+                            var foo = Foo();
+                            print foo.init();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Foo instance
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+    [Fact]
+    public void ClassHierarchy()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Doughnut {}
+
+                            class BostonCream < Doughnut {}
+
+                            print Doughnut();
+                            print BostonCream();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Doughnut instance
+                                       BostonCream instance
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
+    public void ClassMustInheritFromClass()
+    {
+        /* language=Java */
+        const string CODE = """
+                            var NotAClass = "I am totally not a class";
+                            class Subclass < NotAClass {}
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Superclass must be a class.
+                                       [line 2]
 
                                        """;
         TestRun(CODE, EXPECTED_OUTPUT);
@@ -941,7 +1219,7 @@ public partial class CodeTests(ITestOutputHelper testOutput)
                             }
                             """;
         const string EXPECTED_OUTPUT = """
-                                       [line 3] Error at 'a': Variable already declared in this scope.
+                                       [line 3] Error at 'a': Already a variable with this name in this scope.
 
                                        """;
         TestRun(CODE, EXPECTED_OUTPUT);

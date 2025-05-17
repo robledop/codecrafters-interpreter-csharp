@@ -21,6 +21,7 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
 
     readonly Stack<Dictionary<string, bool>> _scopes = new();
     FunctionType _currentFunction = FunctionType.NONE;
+    ClassType _currentClass = ClassType.NONE;
 
     public object? VisitAssignExpression(Assign expr)
     {
@@ -46,7 +47,8 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
 
     public object? VisitGetExpression(Get expr)
     {
-        throw new NotImplementedException();
+        Resolve(expr.Object);
+        return null;
     }
 
     public object? VisitGroupingExpression(Grouping expr)
@@ -67,7 +69,9 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
 
     public object? VisitSetExpression(Set expr)
     {
-        throw new NotImplementedException();
+        Resolve(expr.Value);
+        Resolve(expr.Object);
+        return null;
     }
 
     public object? VisitSuperExpression(Super expr)
@@ -77,7 +81,11 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
 
     public object? VisitThisExpression(This expr)
     {
-        throw new NotImplementedException();
+        if (_currentClass == ClassType.NONE)
+            Lox.Error(expr.Keyword, "Can't use 'this' outside of a class.");
+
+        ResolveLocal(expr, expr.Keyword);
+        return null;
     }
 
     public object? VisitUnaryExpression(Unary expr)
@@ -106,9 +114,37 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
         return null;
     }
 
-    public object? VisitClassStatement(Class expr)
+    public object? VisitClassStatement(Class stmt)
     {
-        throw new NotImplementedException();
+        var enclosingClass = _currentClass;
+        _currentClass = ClassType.CLASS;
+
+        Declare(stmt.Name);
+        Define(stmt.Name);
+
+        if (stmt.SuperClass is not null && stmt.Name.Lexeme == stmt.SuperClass.Name.Lexeme)
+            Lox.Error(stmt.SuperClass.Name, "A class can't inherit from itself.");
+
+        if (stmt.SuperClass is not null)
+            Resolve(stmt.SuperClass);
+
+        BeginScope();
+
+        _scopes.Peek().Add("this", true);
+
+        foreach (var method in stmt.Methods)
+        {
+            var declaration = FunctionType.METHOD;
+            if (method.Name.Lexeme == "init")
+                declaration = FunctionType.INITIALIZER;
+            ResolveFunction(method, declaration);
+        }
+
+        EndScope();
+
+        _currentClass = enclosingClass;
+
+        return null;
     }
 
     public object? VisitExpressionStatement(StmtExpression stmt)
@@ -148,7 +184,7 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
             Lox.Error(stmt.Keyword, "Can't return from top-level code.");
 
         if (_currentFunction == FunctionType.INITIALIZER && stmt.Value is not null)
-            throw new RuntimeError(stmt.Keyword, "Cannot return a value from an initializer.");
+            Lox.Error(stmt.Keyword, "Cannot return a value from an initializer.");
 
         if (stmt.Value is not null)
             Resolve(stmt.Value);
@@ -220,7 +256,7 @@ public record Resolver(LoxInterpreter LoxInterpreter) : IExprVisitor<object?>, I
         if (!_scopes.Any()) return;
         var scope = _scopes.Peek();
         if (scope.ContainsKey(name.Lexeme!))
-            Lox.Error(name, $"Variable already declared in this scope.");
+            Lox.Error(name, "Already a variable with this name in this scope.");
         else
             scope.Add(name.Lexeme!, false);
     }

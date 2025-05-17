@@ -3,7 +3,7 @@ namespace CSharpLox.Parser;
 public interface IStmtVisitor<out TResult>
 {
     TResult VisitBlockStatement(Block expr);
-    TResult VisitClassStatement(Class expr);
+    TResult VisitClassStatement(Class stmt);
     TResult VisitExpressionStatement(StmtExpression expr);
     TResult VisitFunctionStatement(Function stmt);
     TResult VisitIfStatement(If expr);
@@ -27,7 +27,7 @@ public record Block(List<IStmt> Statements) : IStmt
         => visitor.VisitBlockStatement(this);
 }
 
-public record Class(Token Name, Variable Superclass, List<Function> Methods) : IStmt
+public record Class(Token Name, Variable? SuperClass, List<Function> Methods) : IStmt
 {
     public TResult Accept<TResult>(IStmtVisitor<TResult> visitor)
         => visitor.VisitClassStatement(this);

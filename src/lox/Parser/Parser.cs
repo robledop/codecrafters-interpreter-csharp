@@ -64,7 +64,7 @@ public class Parser(List<Token> tokens)
 
     static ParseError Error(Token token, string message)
     {
-        Lox.Report(token.Line, token.Type == EOF ? " at end" : $" at '{token.Lexeme}'", message);
+        Lox.Report(token.Line, token.Column, token.Type == EOF ? " at end" : $" at '{token.Lexeme}'", message);
         return new ParseError(token, message);
     }
 
@@ -86,6 +86,7 @@ public class Parser(List<Token> tokens)
     {
         try
         {
+            if (Match(CLASS)) return ClassDeclaration();
             if (Match(FUN)) return Function("function");
             if (Match(VAR)) return VarDeclaration();
             return Statement();
@@ -95,6 +96,30 @@ public class Parser(List<Token> tokens)
             Synchronize();
             return null;
         }
+    }
+
+    // classDecl      : "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
+    IStmt ClassDeclaration()
+    {
+        var name = Consume(IDENTIFIER, "Expect class name.");
+
+        Variable? superclass = null;
+        if (Match(LESS))
+        {
+            Consume(IDENTIFIER, "Expect superclass name.");
+            superclass = new Variable(Previous());
+        }
+
+        Consume(LEFT_BRACE, "Expect '{' before class body.");
+
+        var methods = new List<Function>();
+        while (!Check(RIGHT_BRACE) && !IsAtEnd())
+        {
+            methods.Add((Function)Function("method"));
+        }
+
+        Consume(RIGHT_BRACE, "Expect '}' after class body.");
+        return new Class(name, superclass, methods);
     }
 
     // function       : "fun" IDENTIFIER "(" parameters? ")" block ;
@@ -301,12 +326,13 @@ public class Parser(List<Token> tokens)
         var equals = Previous();
         var value = Assignment();
 
-        if (expr is not Variable variable)
+        return expr switch
         {
-            throw Error(equals, "Invalid assignment target.");
-        }
-
-        return new Assign(variable.Name, value);
+            Variable variable => new Assign(variable.Name, value),
+            // Turning the Get into a Set allows we to assign to properties
+            Get get => new Set(get.Object, get.Name, value),
+            _ => throw Error(equals, "Invalid assignment target.")
+        };
     }
 
     // or: and ( "or" and )* ;
@@ -417,6 +443,11 @@ public class Parser(List<Token> tokens)
         while (true)
         {
             if (Match(LEFT_PAREN)) expr = FinishCall(expr);
+            else if (Match(DOT))
+            {
+                var name = Consume(IDENTIFIER, "Expect property name after '.'.");
+                expr = new Get(expr, name);
+            }
             else break;
         }
 
@@ -451,10 +482,9 @@ public class Parser(List<Token> tokens)
         if (Match(FALSE)) return new Literal(false);
         if (Match(TRUE)) return new Literal(true);
         if (Match(NIL)) return new Literal(null);
-        if (Match(NUMBER, STRING))
-            return new Literal(Previous().Literal);
-        if (Match(IDENTIFIER))
-            return new Variable(Previous());
+        if (Match(NUMBER, STRING)) return new Literal(Previous().Literal);
+        if (Match(THIS)) return new This(Previous());
+        if (Match(IDENTIFIER)) return new Variable(Previous());
 
         // ReSharper disable once InvertIf
         if (Match(LEFT_PAREN))

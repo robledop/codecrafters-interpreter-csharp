@@ -172,7 +172,7 @@ public class Lexer
                     break;
                 }
 
-                Lox.Error(Line, $"Unexpected character: {CurrentChar}");
+                Lox.Error(Line, Column, $"Unexpected character: {CurrentChar}");
                 token = new Token(Type: TokenType.INVALID, Line: Line, Column: Column);
                 break;
         }
@@ -205,7 +205,7 @@ public class Lexer
 
         if (IsAtEnd())
         {
-            Lox.Error(Line, "Unterminated block comment.");
+            Lox.Error(Line, Column, "Unterminated block comment.");
             return new Token(Type: TokenType.INVALID, Line: Line, Column: Column);
         }
 
@@ -223,7 +223,7 @@ public class Lexer
         var lexeme = Source[start..end];
 
         return Keywords.TryGetValue(lexeme, out var type)
-            ? new Token(Type: type, Lexeme: lexeme)
+            ? new Token(Type: type, Lexeme: lexeme, Line: Line, Column: Column)
             : new Token(Type: TokenType.IDENTIFIER, Lexeme: lexeme, Line: Line, Column: Column);
     }
 
@@ -245,7 +245,7 @@ public class Lexer
 
         if (IsAtEnd())
         {
-            Lox.Error(Line, "Unterminated string.");
+            Lox.Error(Line, Column, "Unterminated string.");
             return new Token(Type: TokenType.INVALID, Line: Line, Column: Column);
         }
 
@@ -278,7 +278,7 @@ public class Lexer
             return new Token(Type: TokenType.NUMBER, Lexeme: lexeme, Literal: number, Line: Line, Column: Column);
         }
 
-        Lox.Error(Line, $"Invalid number: {lexeme}");
+        Lox.Error(Line, Column, $"Invalid number: {lexeme}");
         return new Token(Type: TokenType.INVALID, Lexeme: lexeme, Line: Line, Column: Column);
     }
 

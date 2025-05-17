@@ -179,18 +179,25 @@ public class LoxInterpreter : IExprVisitor<object?>, IStmtVisitor<object?>
 
     public object? VisitGetExpression(Get expr)
     {
-        throw new NotImplementedException();
+        var obj = Evaluate(expr.Object);
+        if (obj is not LoxInstance instance)
+            throw new RuntimeError(expr.Name, "Only instances have properties.");
+
+        return instance.Get(expr.Name);
     }
 
     public object? VisitSetExpression(Set expr)
     {
-        throw new NotImplementedException();
+        var obj = Evaluate(expr.Object);
+        if (obj is not LoxInstance instance)
+            throw new RuntimeError(expr.Name, "Only instances have fields.");
+
+        var value = Evaluate(expr.Value);
+        instance.Set(expr.Name, value);
+        return value;
     }
 
-    public object? VisitThisExpression(This expr)
-    {
-        throw new NotImplementedException();
-    }
+    public object? VisitThisExpression(This expr) => LookUpVariable(expr.Keyword, expr);
 
     public object? VisitSuperExpression(Super expr)
     {
@@ -203,9 +210,28 @@ public class LoxInterpreter : IExprVisitor<object?>, IStmtVisitor<object?>
         return null;
     }
 
-    public object? VisitClassStatement(Class expr)
+    public object? VisitClassStatement(Class stmt)
     {
-        throw new NotImplementedException();
+        object? superClass = null;
+
+        if (stmt.SuperClass is not null)
+        {
+            superClass = Evaluate(stmt.SuperClass);
+            if (superClass is not LoxClass)
+                throw new RuntimeError(stmt.SuperClass.Name, "Superclass must be a class.");
+        }
+
+        _environment.Define(stmt.Name.Lexeme!, null);
+        var methods = new Dictionary<string, LoxFunction>();
+        foreach (var method in stmt.Methods)
+        {
+            var function = new LoxFunction(method, _environment, method.Name.Lexeme == "init");
+            methods[method.Name.Lexeme!] = function;
+        }
+
+        var klass = new LoxClass(stmt.Name.Lexeme!, (LoxClass?)superClass, methods);
+        _environment.Assign(stmt.Name, klass);
+        return null;
     }
 
     public object? VisitExpressionStatement(StmtExpression expr)

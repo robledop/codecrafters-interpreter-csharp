@@ -2,7 +2,7 @@ using CSharpLox.Parser;
 
 namespace CSharpLox.Interpreter.Functions;
 
-public class LoxFunction(Function declaration, LoxEnvironment closure) : ICallable
+public class LoxFunction(Function declaration, LoxEnvironment closure, bool isInitializer = false) : ICallable
 {
     public object? Call(LoxInterpreter loxInterpreter, List<object> arguments)
     {
@@ -19,13 +19,25 @@ public class LoxFunction(Function declaration, LoxEnvironment closure) : ICallab
         }
         catch (ReturnException ret)
         {
-            return ret.Value;
+            return isInitializer
+                ? closure.GetAt(0, new Token(TokenType.THIS, "this", null, -1))
+                : ret.Value;
         }
+
+        if (isInitializer)
+            return closure.GetAt(0, new Token(TokenType.THIS, "this", null, -1));
 
         return null;
     }
 
     public int Arity() => declaration.Parameters.Count;
+
+    public LoxFunction Bind(LoxInstance instance)
+    {
+        var environment = new LoxEnvironment(closure);
+        environment.Define("this", instance);
+        return new LoxFunction(declaration, environment, isInitializer);
+    }
 
     public override string ToString() => $"<fn {declaration.Name.Lexeme}>";
 }

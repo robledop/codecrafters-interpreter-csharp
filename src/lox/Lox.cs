@@ -12,21 +12,22 @@ public static class Lox
     public static bool HadError { get; private set; }
     public static bool HadRuntimeError { get; private set; }
 
-    public static void Error(int line, string message)
+    public static void Error(int line, int column, string message)
     {
-        Report(line, "", message);
+        Report(line, column, "", message);
     }
 
     public static void Error(Token token, string message)
     {
         if (token.Type == TokenType.EOF)
-            Report(token.Line, " at end", message);
+            Report(token.Line, token.Column, " at end", message);
         else
-            Report(token.Line, $" at '{token.Lexeme}'", message);
+            Report(token.Line, token.Column, $" at '{token.Lexeme}'", message);
     }
 
-    public static void Report(int line, string where, string message)
+    public static void Report(int line, int column, string where, string message)
     {
+        // Console.Error.WriteLine($"[line {line}, column {column}] Error{where}: {message}");
         Console.Error.WriteLine($"[line {line}] Error{where}: {message}");
         HadError = true;
     }

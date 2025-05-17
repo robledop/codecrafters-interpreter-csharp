@@ -1209,6 +1209,29 @@ public partial class CodeTests(ITestOutputHelper testOutput)
 
 
     [Fact]
+    public void ClassInheritMethods()
+    {
+        /* language=Java */
+        const string CODE = """
+                            class Doughnut {
+                              cook() {
+                                print "Fry until golden brown.";
+                              }
+                            }
+                            
+                            class BostonCream < Doughnut {}
+                            
+                            BostonCream().cook();
+                            """;
+        const string EXPECTED_OUTPUT = """
+                                       Fry until golden brown.
+
+                                       """;
+        TestRun(CODE, EXPECTED_OUTPUT);
+    }
+
+
+    [Fact]
     public void VariableRedeclaration()
     {
         /* language=Java */

@@ -15,7 +15,8 @@ public class LoxClass(string name, LoxClass? superClass, Dictionary<string, LoxF
         return instance;
     }
 
-    public LoxFunction? FindMethod(string name) => Methods.GetValueOrDefault(name);
+    public LoxFunction? FindMethod(string name) =>
+        Methods.GetValueOrDefault(name) ?? superClass?.FindMethod(name);
 
     public int Arity() => FindMethod("init")?.Arity() ?? 0;
 }
